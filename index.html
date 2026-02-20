@@ -1,83 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PRIME90 AI Football Analyzer</title>
+<meta charset="UTF-8">
+<title>⚡ PRIME90.PRO AI Football Analyzer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;600;900&display=swap" rel="stylesheet">
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #0a0f1f;
-  color: white;
-  text-align: center;
-  padding: 20px;
+body{
+ background:#050505;
+ color:white;
+ font-family:Inter;
+ padding:20px;
 }
-
-h1 {
-  font-size: 24px;
-  margin-bottom: 10px;
+.header{
+ font-size:32px;
+ font-weight:900;
+ text-align:center;
+ margin-bottom:20px;
+ color:#00f2ff;
 }
-
-.card {
-  background: rgba(255,255,255,0.05);
-  border-radius: 16px;
-  padding: 20px;
-  max-width: 600px;
-  margin: auto;
-  box-shadow: 0 0 20px rgba(0,255,255,0.2);
+.card{
+ background:#0b0b0b;
+ padding:20px;
+ border-radius:20px;
+ margin-bottom:20px;
+ box-shadow:0 0 20px rgba(0,242,255,.1);
 }
-
-button {
-  padding: 12px 20px;
-  font-size: 16px;
-  border: none;
-  border-radius: 10px;
-  background: #00ffd5;
-  color: black;
-  cursor: pointer;
+button{
+ background:#00f2ff;
+ border:none;
+ padding:12px 18px;
+ border-radius:30px;
+ font-weight:700;
+ cursor:pointer;
+ margin:6px 0;
 }
-
-button:hover {
-  background: #00c0a0;
+button:hover{background:#00c8d9;}
+.match-btn{
+ display:block;
+ width:100%;
+ text-align:left;
+ background:#111;
+ color:#00f2ff;
 }
-
-pre {
-  text-align: left;
-  background: black;
-  padding: 10px;
-  border-radius: 10px;
-  max-height: 300px;
-  overflow: auto;
+.bar{
+ width:100%;
+ background:#111;
+ border-radius:20px;
+ height:18px;
+ overflow:hidden;
+ margin:8px 0;
 }
+.bar-inner{
+ height:100%;
+ background:#00f2ff;
+ width:0%;
+ transition:1s;
+}
+.gold{color:#ffcc00;font-weight:900;font-size:18px;}
+small{opacity:.5}
 </style>
 </head>
 
 <body>
 
-<h1>⚡ PRIME90 AI Football Analyzer</h1>
+<div class="header">⚡ PRIME90.PRO AI Football Analyzer</div>
 
 <div class="card">
-  <p>กดปุ่มเพื่อให้ AI วิเคราะห์คู่ฟุตบอล</p>
-  <button onclick="analyze()">Analyze Match</button>
-  <pre id="result">Waiting...</pre>
+<button onclick="loadMatches()">🚀 Load Today Live Matches</button>
+<div id="matches"></div>
+</div>
+
+<div class="card" id="analysisCard" style="display:none;">
+<h3 id="matchTitle"></h3>
+
+<div>Over 0.5 HT</div>
+<div class="bar"><div id="barHT" class="bar-inner"></div></div>
+
+<div>Over 2.5 FT</div>
+<div class="bar"><div id="barFT" class="bar-inner"></div></div>
+
+<div id="confidence"></div>
+<div id="pick" class="gold"></div>
+<small id="time"></small>
 </div>
 
 <script>
-// 🔥 ใส่ Worker URL ของคุณตรงนี้
-const WORKER_URL = "https://prime90-worker.arnupapsawad-mark2546.workers.dev";
+// 🔥 เปลี่ยนเป็น Worker ของคุณ
+const WORKER = "https://createworker.arnupapsawad-mark2546.workers.dev";
 
-async function analyze() {
-  const resultBox = document.getElementById("result");
-  resultBox.textContent = "⏳ AI is analyzing...";
+// โหลดแมตช์จริงจาก Football API ผ่าน Worker
+async function loadMatches(){
+ document.getElementById("matches").innerHTML = "⏳ Loading real matches...";
 
-  try {
-    const res = await fetch(WORKER_URL);
-    const data = await res.text();
-    resultBox.textContent = data;
-  } catch (err) {
-    resultBox.textContent = "❌ Error: " + err.message;
-  }
+ try{
+  const res = await fetch(WORKER + "/matches");
+  const data = await res.json();
+
+  let html="";
+  data.forEach(m=>{
+    const match = m.teams.home.name + " vs " + m.teams.away.name;
+    html += `<button class="match-btn" onclick="analyzeMatch('${match}')">
+    ⚽ ${match}</button>`;
+  });
+
+  document.getElementById("matches").innerHTML = html || "No matches today";
+
+ }catch(e){
+  document.getElementById("matches").innerHTML="❌ Worker Error";
+ }
+}
+
+// วิเคราะห์ AI ผ่าน Gemini
+async function analyzeMatch(match){
+ document.getElementById("analysisCard").style.display="block";
+ document.getElementById("matchTitle").innerText = match;
+ document.getElementById("pick").innerText = "Analyzing...";
+
+ const res = await fetch(WORKER + "/analyze?match=" + encodeURIComponent(match));
+ const text = await res.text();
+ const json = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
+
+ document.getElementById("barHT").style.width = json.over05ht + "%";
+ document.getElementById("barFT").style.width = json.over25ft + "%";
+ document.getElementById("confidence").innerText = "Confidence: " + json.confidence + "%";
+ document.getElementById("pick").innerText = "🔥 PICK: " + json.pick;
+ document.getElementById("time").innerText = "Updated: " + new Date().toLocaleString();
 }
 </script>
 
