@@ -1,54 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-<title>PRIME90 AI FOOTBALL</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body{background:black;color:#00fff7;font-family:monospace;text-align:center}
-h1{text-shadow:0 0 20px cyan}
-.card{
- border:1px solid cyan;
- padding:10px;margin:10px;
- box-shadow:0 0 20px cyan;
-}
-.ai{color:#ff00ff}
-.odds{color:#00ff00}
-.rank{color:yellow}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>prime90.co - AI วิเคราะห์บอล</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-900 text-white p-5">
 
-<h1>⚡ PRIME90 AI FOOTBALL TODAY</h1>
-<div id="app">Loading AI...</div>
+    <div class="max-w-3xl mx-auto">
+        <h1 class="text-3xl font-bold text-center text-yellow-400 mb-8">prime90.co - ทีเด็ด AI วันนี้</h1>
+        
+        <div id="match-container" class="space-y-4">
+            <p class="text-center text-gray-400">กำลังโหลดข้อมูล AI...</p>
+        </div>
+    </div>
 
-<script>
-const API="https://prime90-worker.arnupapsawad-mark2546.workers.dev/api/matches"
+    <script>
+        // ⚠️ สำคัญมาก: เปลี่ยน URL ตรงนี้เป็น URL ของ Worker ที่จดไว้ในส่วนที่ 1
+        const API_URL = "https://prime90-api.ของคุณ.workers.dev";
 
-async function load(){
- const r = await fetch(API)
- const d = await r.json()
- let html=""
+        async function fetchMatches() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                const container = document.getElementById('match-container');
+                container.innerHTML = ''; // เคลียร์คำว่ากำลังโหลดออก
 
- d.forEach(m=>{
-  html += `
-  <div class="card">
-   <b>${m.home}</b> vs <b>${m.away}</b><br>
-   League: ${m.league}<br>
-   Time: ${new Date(m.time).toLocaleString("th-TH")}<br>
+                // เอาข้อมูลมาสร้างเป็นกล่องสวยๆ
+                data.forEach(match => {
+                    const card = `
+                        <div class="bg-gray-800 p-5 rounded-lg border border-gray-700 shadow-lg">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-xl font-bold">${match.team_home} VS ${match.team_away}</span>
+                                <span class="bg-blue-600 px-3 py-1 rounded text-sm">เวลา ${match.time}</span>
+                            </div>
+                            <p class="text-gray-400 mb-2">ราคา: <span class="text-white">${match.handicap}</span></p>
+                            <div class="bg-gray-700 p-3 rounded">
+                                <p class="text-green-400 font-bold">🤖 AI ฟันธง: ${match.ai_predict} (มั่นใจ ${match.confidence})</p>
+                                <p class="text-sm mt-1">เหตุผล: ${match.reason}</p>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                });
+            } catch (error) {
+                document.getElementById('match-container').innerHTML = '<p class="text-red-500 text-center">ดึงข้อมูลไม่สำเร็จ ลองรีเฟรชใหม่อีกครั้ง</p>';
+            }
+        }
 
-   <div class="ai">${m.ai.ai_text}</div>
-   <div class="odds">Odds H ${m.ai.oddsH} | A ${m.ai.oddsA}</div>
-   <div class="rank">AI Rank ⭐ ${m.ai.rank}/5</div>
-  </div>
-  `
- })
-
- document.getElementById("app").innerHTML = html || "❌ No matches today"
-}
-
-load()
-setInterval(load,300000)
-</script>
-
+        fetchMatches();
+    </script>
 </body>
 </html>
