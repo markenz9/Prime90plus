@@ -1,104 +1,47 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRIME90.CO - AI FOOTBALL</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;900&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #020617; color: white; }
-        .card-pro { background: linear-gradient(145deg, #0f172a, #1e293b); border: 1px solid #334155; }
-        .tag-fav { background: #ef4444; color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
-        .tag-under { background: #3b82f6; color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
-        .pick-fav { border: 2px solid #ef4444; background: rgba(239, 68, 68, 0.15); color: #fca5a5; }
-        .pick-under { border: 2px solid #3b82f6; background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
-        .pick-neutral { border: 2px solid #eab308; background: rgba(234, 179, 8, 0.15); color: #fde047; }
-        .hidden { display: none; }
-    </style>
-</head>
-<body class="min-h-screen p-4 md:p-8">
+data.matches.forEach(match => {
+    const isHomeFav = match.fav === match.home;
+    let pickStyle = match.type === "fav" ? "pick-fav" : (match.type === "under" ? "pick-under" : "pick-neutral");
 
-    <div class="max-w-2xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-6xl font-black text-yellow-400 italic tracking-tighter uppercase">PRIME90.CO</h1>
-            <p class="text-gray-500 text-[10px] font-bold tracking-[0.3em] mt-1 uppercase">AI Professional Analysis System</p>
-        </header>
-        
-        <div id="match-container" class="space-y-6">
-            <div id="loader" class="text-center py-20 text-yellow-500 animate-pulse font-bold italic">🤖 กำลังรวบรวมบอลทุกลีกทั่วโลก...</div>
-        </div>
-    </div>
+    container.innerHTML += `
+        <div class="card-pro rounded-[40px] overflow-hidden mb-8 shadow-2xl border-b-4 border-black/50">
+            <div class="bg-slate-950/50 px-6 py-2 flex justify-between items-center text-[10px] font-bold">
+                <span class="text-gray-500 uppercase">${match.league}</span>
+                <span class="text-yellow-500">${match.time} น.</span>
+            </div>
+            <div class="p-8">
+                <div class="flex justify-between items-center mb-8 text-center px-4">
+                    <div class="w-2/5">
+                        <img src="${match.logo_h}" class="w-16 h-16 mx-auto mb-2">
+                        <p class="font-bold text-[13px]">${isHomeFav ? '⚽ ' : ''}${match.home}</p>
+                        <span class="${isHomeFav ? 'tag-fav' : 'tag-under'}">${isHomeFav ? 'ทีมต่อ' : 'ทีมรอง'}</span>
+                    </div>
+                    <div class="text-2xl font-black text-slate-800 italic uppercase">VS</div>
+                    <div class="w-2/5">
+                        <img src="${match.logo_a}" class="w-16 h-16 mx-auto mb-2">
+                        <p class="font-bold text-[13px]">${!isHomeFav && match.fav !== 'ไม่มี' ? '⚽ ' : ''}${match.away}</p>
+                        <span class="${!isHomeFav && match.fav !== 'ไม่มี' ? 'tag-fav' : 'tag-under'}">${!isHomeFav && match.fav !== 'ไม่มี' ? 'ทีมต่อ' : 'ทีมรอง'}</span>
+                    </div>
+                </div>
 
-    <script>
-        const API_URL = "https://prime90api.arnupapsawad-mark2546.workers.dev";
+                <div class="grid grid-cols-3 gap-2 mb-6 text-center">
+                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5">
+                        <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">ราคาต่อ (HDP)</p>
+                        <p class="text-sm font-black text-white">${match.real_hdp}</p>
+                    </div>
+                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5">
+                        <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงแรก (HT)</p>
+                        <p class="text-sm font-black text-white">${match.real_ou_ht}</p>
+                    </div>
+                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5">
+                        <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงเต็ม (FT)</p>
+                        <p class="text-sm font-black text-white">${match.real_ou_ft}</p>
+                    </div>
+                </div>
 
-        async function fetchMatches() {
-            const container = document.getElementById('match-container');
-            const loader = document.getElementById('loader');
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                loader.classList.add('hidden');
-                container.innerHTML = ''; 
-
-                if(data.step) {
-                    container.innerHTML = `
-                        <button onclick="document.getElementById('step-c').classList.toggle('hidden')" class="bg-yellow-500 text-black font-black py-4 rounded-3xl w-full text-xl mb-10 shadow-lg active:scale-95 transition-all">🔥 เปิดสเต็ป 3 ตัวตรงวันนี้</button>
-                        <div id="step-c" class="hidden mb-10 bg-slate-900 border-2 border-yellow-500 rounded-3xl p-6">
-                            ${data.step.map(i => `<div class="p-3 border-b border-slate-800 font-bold text-white text-lg italic">🎯 ${i}</div>`).join('')}
-                        </div>`;
-                }
-
-                data.matches.forEach(m => {
-                    const isHomeFav = m.fav === m.home;
-                    const isAwayFav = m.fav === m.away;
-                    const isDraw = m.fav === "ไม่มี" || m.fav === "เสมอ" || m.hdp === "เสมอ";
-                    
-                    let pickStyle = "pick-neutral";
-                    if(m.type === "fav") pickStyle = "pick-fav";
-                    if(m.type === "under") pickStyle = "pick-under";
-
-                    container.innerHTML += `
-                        <div class="card-pro rounded-[40px] overflow-hidden mb-8 shadow-2xl border-b-4 border-black/50">
-                            <div class="bg-slate-950/50 px-6 py-2 flex justify-between items-center text-[10px] font-bold">
-                                <span class="text-gray-500 uppercase tracking-widest">${m.league}</span>
-                                <span class="text-yellow-500 uppercase italic">${m.date_info}</span>
-                            </div>
-                            <div class="p-8">
-                                <div class="flex justify-between items-center mb-8 text-center px-4">
-                                    <div class="w-2/5">
-                                        <img src="${m.logo_h}" class="w-16 h-16 mx-auto mb-3 drop-shadow-xl">
-                                        <p class="font-bold text-[13px] mb-1 leading-tight">${isHomeFav ? '⚽ ' : ''}${m.home}</p>
-                                        <span class="${isDraw ? 'text-gray-500 text-[10px]' : (isHomeFav ? 'tag-fav' : 'tag-under')}">
-                                            ${isDraw ? 'ราคาเสมอ' : (isHomeFav ? 'ทีมต่อ' : 'ทีมรอง')}
-                                        </span>
-                                    </div>
-                                    <div class="text-2xl font-black text-slate-800 italic uppercase">VS</div>
-                                    <div class="w-2/5">
-                                        <img src="${m.logo_a}" class="w-16 h-16 mx-auto mb-3 drop-shadow-xl">
-                                        <p class="font-bold text-[13px] mb-1 leading-tight">${isAwayFav ? '⚽ ' : ''}${m.away}</p>
-                                        <span class="${isDraw ? 'text-gray-500 text-[10px]' : (isAwayFav ? 'tag-fav' : 'tag-under')}">
-                                            ${isDraw ? 'ราคาเสมอ' : (isAwayFav ? 'ทีมต่อ' : 'ทีมรอง')}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-3 gap-2 mb-6">
-                                    <div class="bg-black/40 p-3 rounded-2xl text-center border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">ราคาต่อ</p><p class="text-sm font-black text-white">${m.hdp}</p></div>
-                                    <div class="bg-black/40 p-3 rounded-2xl text-center border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงแรก</p><p class="text-sm font-black text-white">${m.ht}</p></div>
-                                    <div class="bg-black/40 p-3 rounded-2xl text-center border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงเต็ม</p><p class="text-sm font-black text-white">${m.ft}</p></div>
-                                </div>
-                                <div class="${pickStyle} p-6 rounded-[35px] text-center mb-4 shadow-inner transition-all">
-                                    <p class="text-[10px] font-black uppercase mb-1 opacity-70 tracking-widest">👑 AI Best Decision 👑</p>
-                                    <p class="text-2xl font-black italic tracking-tighter uppercase leading-none">${m.best}</p>
-                                </div>
-                                <div class="bg-white/5 p-4 rounded-2xl border-l-4 border-yellow-500 text-[11px] text-gray-400 italic">" ${m.reason} "</div>
-                            </div>
-                        </div>`;
-                });
-            } catch (e) { container.innerHTML = '<p class="text-center py-20 text-red-500 font-bold">❌ ระบบขัดข้อง กรุณารีเฟรช</p>'; }
-        }
-        fetchMatches();
-    </script>
-</body>
-</html>
+                <div class="${pickStyle} p-6 rounded-[30px] text-center mb-4">
+                    <p class="text-[10px] font-black uppercase mb-1 opacity-70">👑 AI BEST DECISION 👑</p>
+                    <p class="text-2xl font-black italic tracking-tighter uppercase">${match.best}</p>
+                </div>
+            </div>
+        </div>`;
+});
