@@ -4,42 +4,27 @@
 <title>PRIME90 AI FOOTBALL</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body {
-  background:black;
-  color:#00ffea;
-  font-family: monospace;
-  text-align:center;
+body{background:black;color:#00fff7;font-family:monospace;text-align:center}
+h1{text-shadow:0 0 20px cyan}
+.card{
+ border:1px solid cyan;
+ padding:10px;margin:10px;
+ box-shadow:0 0 20px cyan;
 }
-h1 {
-  font-size:28px;
-  text-shadow:0 0 20px #00ffe1;
-}
-.card {
-  border:1px solid #00ffe1;
-  padding:10px;
-  margin:10px;
-  box-shadow:0 0 10px #00ffe1;
-}
-.ai {
-  color:#ff00ff;
-}
-.odds {
-  color:#00ff00;
-}
-.rank {
-  color:yellow;
-}
+.ai{color:#ff00ff}
+.odds{color:#00ff00}
+.rank{color:yellow}
 </style>
 </head>
 <body>
 
 <h1>⚡ PRIME90 AI FOOTBALL TODAY</h1>
-<div id="app">Loading...</div>
+<div id="app">Loading AI...</div>
 
 <script>
 const API="https://prime90-worker.arnupapsawad-mark2546.workers.dev/api/matches"
 
-async function load() {
+async function load(){
  const r = await fetch(API)
  const d = await r.json()
  let html=""
@@ -51,11 +36,9 @@ async function load() {
    League: ${m.league}<br>
    Time: ${new Date(m.time).toLocaleString("th-TH")}<br>
 
-   <span class="ai">AI Win: ${m.ai.win}%</span><br>
-   AI Over/Under: ${m.ai.over?"OVER":"UNDER"}<br>
-
-   <span class="odds">Odds H: ${m.ai.oddsH} | A: ${m.ai.oddsA}</span><br>
-   <span class="rank">AI Rank: ⭐ ${m.ai.rank}/5</span>
+   <div class="ai">${m.ai.ai_text}</div>
+   <div class="odds">Odds H ${m.ai.oddsH} | A ${m.ai.oddsA}</div>
+   <div class="rank">AI Rank ⭐ ${m.ai.rank}/5</div>
   </div>
   `
  })
@@ -64,7 +47,7 @@ async function load() {
 }
 
 load()
-setInterval(load, 300000) // auto refresh 5 นาที
+setInterval(load,300000)
 </script>
 
 </body>
