@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRIME90.PRO - STEALTH CORE</title>
+    <title>PRIME90.PRO - FINAL STAND</title>
     <style>
-        :root { --cyan: #00f2ff; --gold: #ffcc00; --carbon: #080808; }
-        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 15px; }
-        .tesla-shell { max-width: 450px; margin: auto; background: #0a0a0a; border-radius: 40px; border: 1px solid #1a1a1a; overflow: hidden; box-shadow: 0 0 60px rgba(0,0,0,1); }
-        .header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #111; }
-        .logo { font-size: 32px; font-weight: 900; letter-spacing: -2px; }
-        .logo span { color: var(--cyan); text-shadow: 0 0 15px var(--cyan); }
+        :root { --blue: #00f2ff; --gold: #ffcc00; --dark: #050505; }
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 10px; }
+        .tesla-shell { max-width: 450px; margin: auto; background: #0a0a0a; border-radius: 40px; border: 1px solid #1a1a1a; overflow: hidden; box-shadow: 0 0 60px #000; }
+        .header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #111; }
+        .logo { font-size: 30px; font-weight: 900; letter-spacing: -2px; }
+        .logo span { color: var(--blue); text-shadow: 0 0 15px var(--blue); }
         
-        /* ช่องกรอก API Key แบบซ่อน */
-        .key-config { padding: 15px; background: #111; border-bottom: 1px solid #222; display: flex; gap: 10px; }
-        .key-input { flex: 1; background: #000; border: 1px solid #333; border-radius: 10px; color: #555; padding: 10px; font-size: 10px; }
-        .save-btn { background: var(--cyan); color: #000; border: none; border-radius: 10px; padding: 0 15px; font-weight: bold; font-size: 10px; }
+        /* ช่องกรอกรหัสลับป้องกันการโดนแบน */
+        .config-box { padding: 15px; background: #111; border-bottom: 1px solid #222; display: flex; gap: 8px; flex-wrap: wrap; }
+        .key-input { flex: 1; background: #000; border: 1px solid #333; border-radius: 12px; color: #00f2ff; padding: 12px; font-size: 10px; font-family: monospace; }
+        .btn { background: var(--blue); color: #000; border: none; border-radius: 12px; padding: 10px 15px; font-weight: bold; font-size: 10px; cursor: pointer; }
+        .clear-btn { background: #333; color: #fff; }
 
-        .match-box { padding: 25px; background: #080808; border-bottom: 1px solid #111; }
-        .match-list { display: grid; gap: 10px; max-height: 200px; overflow-y: auto; }
-        .match-item { padding: 18px; background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 18px; color: #888; font-size: 13px; font-weight: bold; text-align: center; }
-        .match-item:active { border-color: var(--cyan); color: #fff; transform: scale(0.97); }
+        .match-list { padding: 20px; background: #080808; display: grid; gap: 8px; max-height: 200px; overflow-y: auto; border-bottom: 1px solid #111; }
+        .m-item { padding: 16px; background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 15px; color: #888; font-size: 12px; font-weight: bold; cursor: pointer; text-align: left; }
+        .m-item:active { border-color: var(--blue); color: #fff; }
         
-        .analysis-area { padding: 35px 25px; min-height: 250px; }
-        .bar-bg { height: 4px; background: #111; border-radius: 10px; margin-top: 10px; }
+        .result-panel { padding: 30px 25px; min-height: 250px; }
+        .bar-bg { height: 4px; background: #111; border-radius: 10px; margin-top: 10px; overflow: hidden; }
         .bar-fill { height: 100%; width: 0; transition: 1.5s cubic-bezier(0.1, 0, 0, 1); border-radius: 10px; }
-        .verdict { margin-top: 40px; padding: 30px; background: #0a0a0a; border-radius: 25px; border: 1px solid #151515; text-align: center; }
-        .v-pick { font-size: 28px; font-weight: 900; color: var(--gold); margin-top: 10px; }
-        .msg { padding: 80px 20px; text-align: center; color: #222; font-size: 12px; letter-spacing: 1px; }
+        .verdict { margin-top: 40px; padding: 30px; background: #0c0c0c; border-radius: 25px; border: 1px solid #151515; text-align: center; }
+        .v-pick { font-size: 26px; font-weight: 900; color: var(--gold); margin-top: 10px; }
+        .msg { padding: 60px; text-align: center; color: #333; font-size: 12px; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -35,85 +35,89 @@
 <div class="tesla-shell">
     <div class="header">
         <div class="logo">PRIME90<span>.PRO</span></div>
-        <div style="font-size:8px; color:#444; margin-top:10px; letter-spacing:3px;">STEALTH V27.0 | FEB 20, 2026</div>
+        <div style="font-size:8px; color:#444; margin-top:8px; letter-spacing:3px;">FEB 20, 2026 | SECURE LINK</div>
     </div>
 
-    <div class="key-config">
-        <input type="password" id="api-key" class="key-input" placeholder="PASTE NEW API KEY HERE...">
-        <button class="save-btn" onclick="saveKey()">CONNECT</button>
+    <div class="config-box">
+        <input type="password" id="p90_key" class="key-input" placeholder="PASTE NEW KEY START WITH 'AIza'...">
+        <button class="btn" onclick="connectKey()">CONNECT</button>
+        <button class="btn clear-btn" onclick="clearData()">RESET</button>
     </div>
 
-    <div class="match-box">
-        <div id="match-list" class="match-list"><div class="msg">AWAITING SYSTEM CONNECTION...</div></div>
-    </div>
-
-    <div id="display-panel"><div class="msg">READY FOR TARGET ACQUISITION</div></div>
+    <div id="match-list" class="match-list"><div class="msg">AWAITING NEURAL KEY...</div></div>
+    <div id="display"><div class="msg">READY FOR SCANNING</div></div>
 </div>
 
 <script>
-    // ดึง Key จากความจำเครื่อง (ถ้ามี)
-    let activeKey = localStorage.getItem('p90_key') || "";
-    if(activeKey) { 
-        document.getElementById('api-key').value = "********";
-        autoLoad(); 
+    let currentKey = localStorage.getItem('prime90_v28_key') || "";
+    
+    if(currentKey) {
+        document.getElementById('p90_key').value = "********";
+        loadMatches();
     }
 
-    function saveKey() {
-        const input = document.getElementById('api-key').value;
-        if(input && input !== "********") {
-            localStorage.setItem('p90_key', input);
-            activeKey = input;
+    function connectKey() {
+        const val = document.getElementById('p90_key').value;
+        if(val && val !== "********") {
+            localStorage.setItem('prime90_v28_key', val);
             location.reload();
         }
     }
 
-    async function autoLoad() {
+    function clearData() {
+        localStorage.removeItem('prime90_v28_key');
+        location.reload();
+    }
+
+    async function loadMatches() {
         const list = document.getElementById("match-list");
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${activeKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${currentKey}`;
         try {
             const res = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: "Search Google for major football matches today Feb 20, 2026. Return as JSON array ['Team A vs Team B', ...]. No other text." }] }],
+                    contents: [{ parts: [{ text: "Search Google for major football matches today Feb 20, 2026. Return JSON array ['Team A vs Team B', ...]. No other text." }] }],
                     tools: [{ googleSearchRetrieval: {} }]
                 })
             });
             const data = await res.json();
+            if(data.error) throw new Error(data.error.message);
+            
             const matches = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[[\s\S]*\]/)[0]);
             list.innerHTML = "";
             matches.forEach(m => {
                 const b = document.createElement("div");
-                b.className = "match-item"; b.innerHTML = "⚡ " + m.toUpperCase();
-                b.onclick = () => scan(m);
+                b.className = "m-item"; b.innerHTML = "⚡ " + m.toUpperCase();
+                b.onclick = () => analyze(m);
                 list.appendChild(b);
             });
-        } catch (e) { list.innerHTML = "<div class='msg' style='color:red'>INVALID KEY OR SYNC ERROR.</div>"; }
+        } catch (e) { list.innerHTML = `<div class='msg' style='color:red'>ERROR: ${e.message}</div>`; }
     }
 
-    async function scan(match) {
-        const p = document.getElementById("display-panel");
-        p.innerHTML = "<div class='msg' style='color:var(--cyan)'>SCANNING NEURAL DATA...</div>";
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${activeKey}`;
+    async function analyze(match) {
+        const d = document.getElementById("display");
+        d.innerHTML = "<div class='msg' style='color:var(--blue)'>INITIATING NEURAL SCAN...</div>";
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${currentKey}`;
         try {
             const res = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: `วิเคราะห์สูงแรก/สูงเต็มเวลาคู่ ${match} วันที่ 20 ก.พ. 2026 ตอบ JSON: {'ht':85,'ft':75,'conf':90,'pick':'..'}` }] }]
+                    contents: [{ parts: [{ text: `วิเคราะห์ฟุตบอลคู่ ${match} วันนี้ 20 ก.พ. 2026 ตอบเป็น JSON เท่านั้น: {'ht':85,'ft':75,'conf':90,'pick':'..'}` }] }]
                 })
             });
             const data = await res.json();
-            const d = JSON.parse(data.candidates[0].content.parts[0].text.match(/\{[\s\S]*\}/)[0]);
-            p.innerHTML = `
-                <div class="analysis-area">
-                    <div style="text-align:center; font-weight:900; margin-bottom:30px; font-size:20px;">${match}</div>
-                    <div style="margin-bottom:25px;">สูงแรก <b>${d.ht}%</b> <div class="bar-bg"><div class="bar-fill" id="b1" style="background:var(--cyan)"></div></div></div>
-                    <div style="margin-bottom:25px;">สูงเต็มเวลา <b>${d.ft}%</b> <div class="bar-bg"><div class="bar-fill" id="b2" style="background:#fff"></div></div></div>
-                    <div class="verdict"><div style="font-size:9px; color:#444; letter-spacing:4px;">PRIME90 VERDICT</div><div class="v-pick">${d.pick.toUpperCase()}</div></div>
+            const json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\{[\s\S]*\}/)[0]);
+            d.innerHTML = `
+                <div class="result-panel">
+                    <div style="text-align:center; font-weight:900; margin-bottom:30px;">${match}</div>
+                    <div style="margin-bottom:20px; font-size:11px;">สูงแรก <b>${json.ht}%</b> <div class="bar-bg"><div class="bar-fill" id="b1" style="background:var(--blue)"></div></div></div>
+                    <div style="margin-bottom:20px; font-size:11px;">จบเกม <b>${json.ft}%</b> <div class="bar-bg"><div class="bar-fill" id="b2" style="background:#fff"></div></div></div>
+                    <div class="verdict"><div style="font-size:9px; color:#444;">PRIME90 VERDICT</div><div class="v-pick">${json.pick.toUpperCase()}</div></div>
                 </div>`;
-            setTimeout(() => { document.getElementById("b1").style.width = d.ht+"%"; document.getElementById("b2").style.width = d.ft+"%"; }, 100);
-        } catch (e) { p.innerHTML = "<div class='msg' style='color:red'>ANALYSIS FAILED. CHECK KEY.</div>"; }
+            setTimeout(() => { document.getElementById("b1").style.width = json.ht+"%"; document.getElementById("b2").style.width = json.ft+"%"; }, 100);
+        } catch (e) { d.innerHTML = "<div class='msg' style='color:red'>ANALYSIS FAILED.</div>"; }
     }
 </script>
 </body>
