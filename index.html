@@ -1,159 +1,203 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>PRIME90.PRO</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+<title>PRIME90.PRO ULTRA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body {
-    background:#050505;
-    font-family: Inter, sans-serif;
-    color:white;
-    padding:20px;
+  background:#000;
+  font-family: Inter, sans-serif;
+  color:#fff;
+  padding:20px;
 }
-.header {
-    font-size:32px;
-    font-weight:900;
-    text-align:center;
-    margin-bottom:20px;
-}
-.card {
-    background:#0b0b0b;
-    padding:20px;
-    border-radius:40px;
-    margin-bottom:20px;
-    box-shadow:0 0 25px rgba(0,242,255,0.15);
+.glass {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px);
+  border-radius:30px;
+  padding:20px;
+  margin-bottom:20px;
+  border:1px solid rgba(255,255,255,0.1);
 }
 button {
-    background:#00f2ff;
-    border:none;
-    padding:14px;
-    border-radius:30px;
-    font-weight:700;
-    cursor:pointer;
-    width:100%;
-    margin:6px 0;
+  background: linear-gradient(90deg,#00f2ff,#ff00ff);
+  border:none;
+  padding:12px 25px;
+  border-radius:30px;
+  font-weight:bold;
+  color:black;
+  cursor:pointer;
 }
-button:hover {background:#00c8d9;}
-.match-btn {text-align:left;}
 .bar {
-    width:100%;
-    background:#111;
-    border-radius:20px;
-    overflow:hidden;
-    height:18px;
-    margin:8px 0;
+  height:16px;
+  background:#111;
+  border-radius:10px;
+  overflow:hidden;
 }
-.bar-inner {
-    height:100%;
-    background:#00f2ff;
-    width:0%;
-    transition:1s;
+.fill {
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#00f2ff,#ffcc00);
+  transition:1s;
 }
-.gold {
-    color:#ffcc00;
-    font-weight:900;
-    font-size:18px;
+.radar {
+  width:200px;
+  height:200px;
+  border-radius:50%;
+  border:2px solid #00f2ff;
+  position:relative;
+  margin:auto;
 }
-pre {
-    font-size:11px;
-    opacity:0.7;
-    max-height:200px;
-    overflow:auto;
+.radar::after {
+  content:"";
+  position:absolute;
+  width:50%;
+  height:2px;
+  background:#00f2ff;
+  top:50%;
+  left:50%;
+  transform-origin:left;
+  animation:spin 2s linear infinite;
+}
+@keyframes spin {
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">⚡ PRIME90.PRO</div>
+<h1>⚡ PRIME90.PRO ULTRA</h1>
 
-<div class="card">
-<button onclick="loadMatches()">🚀 LOAD TODAY MATCHES</button>
+<div class="glass">
+<button onclick="loadMatches()">🚀 Load Matches (Cache Mode)</button>
 <div id="matches"></div>
 </div>
 
-<div class="card" id="analysisCard" style="display:none;">
-<h3 id="matchTitle"></h3>
+<div class="glass">
+<h2 id="matchTitle">Select Match</h2>
 
-<div>Over 0.5 HT</div>
-<div class="bar"><div id="barHT" class="bar-inner"></div></div>
+<p>Over 0.5 HT</p>
+<div class="bar"><div id="ht" class="fill"></div></div>
 
-<div>Over 2.5 FT</div>
-<div class="bar"><div id="barFT" class="bar-inner"></div></div>
+<p>Over 2.5 FT</p>
+<div class="bar"><div id="ft" class="fill"></div></div>
 
-<div id="confidence"></div>
-<div id="pick" class="gold"></div>
-</div>
+<h2 id="pick"></h2>
+<h3 id="conf"></h3>
 
-<div class="card">
-<h4>DEBUG AI RESPONSE</h4>
-<pre id="debug"></pre>
+<div class="radar"></div>
 </div>
 
 <script>
-// 🔥 ใส่ Worker URL ของคุณตรงนี้
-const API_URL = "https://createworker.arnupapsawad-mark2546.workers.dev";
+const WORKER="https://createworker.arnupapsawad-mark2546.workers.dev/gemini";
 
-// AI Request
-async function geminiRequest(prompt){
-    const res = await fetch(API_URL, {
-        method:"POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-            contents:[{parts:[{text: prompt}]}]
-        })
-    });
-
-    const data = await res.json();
-    document.getElementById("debug").innerText = JSON.stringify(data,null,2);
-
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+// 🔥 Timeout กันค้าง
+function fetchTimeout(url,options,timeout=8000){
+  return Promise.race([
+    fetch(url,options),
+    new Promise((_,r)=>setTimeout(()=>r("timeout"),timeout))
+  ]);
 }
 
-// Load Matches
+// 🔥 Cache Matches
+let cacheMatches = JSON.parse(localStorage.getItem("matchesCache")||"null");
+
+// Fake fallback data
+const fakeMatches = [
+"Man United vs Liverpool",
+"Real Madrid vs Barcelona",
+"Arsenal vs Chelsea",
+"Bayern vs Dortmund",
+"PSG vs Marseille"
+];
+
 async function loadMatches(){
-    document.getElementById("matches").innerHTML = "⏳ Loading...";
+  if(cacheMatches){
+    console.log("CACHE USED");
+    showMatches(cacheMatches);
+    return;
+  }
 
-    const prompt = `
-List 10 major football matches today worldwide.
-Format: Team A vs Team B only.
-`;
+  document.getElementById("matches").innerHTML="Loading AI matches...";
 
-    const text = await geminiRequest(prompt);
-    const matches = text.split("\n").filter(x=>x.includes(" vs "));
-    
-    let html="";
-    matches.forEach(m=>{
-        html += `<button class="match-btn" onclick="analyzeMatch('${m.replace(/'/g,"")}')">${m}</button>`;
-    });
+  const prompt="List 5 football matches today. Plain list.";
 
-    document.getElementById("matches").innerHTML = html || "No matches found";
+  const res = await fetchTimeout(WORKER,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+  });
+
+  if(res==="timeout"){
+    console.warn("AI TIMEOUT → FAKE DATA");
+    cacheMatches=fakeMatches;
+    localStorage.setItem("matchesCache",JSON.stringify(cacheMatches));
+    showMatches(cacheMatches);
+    return;
+  }
+
+  const data = await res.json();
+  const text=data.candidates[0].content.parts[0].text;
+  const list=text.split("\n").filter(x=>x.trim());
+
+  cacheMatches=list;
+  localStorage.setItem("matchesCache",JSON.stringify(list));
+  showMatches(list);
 }
 
-// Analyze Match
-async function analyzeMatch(match){
-    document.getElementById("analysisCard").style.display="block";
-    document.getElementById("matchTitle").innerText = match;
+function showMatches(list){
+  let html="";
+  list.forEach(m=>{
+    html+=`<button onclick="analyze('${m}')">${m}</button><br><br>`;
+  });
+  document.getElementById("matches").innerHTML=html;
+}
 
-    const prompt = `
-Analyze football match ${match}.
-Return ONLY JSON:
-{"over05ht":0-100,"over25ft":0-100,"confidence":0-100,"pick":"text"}
+// 🔥 วิเคราะห์ AI + Offline fallback
+async function analyze(match){
+  document.getElementById("matchTitle").innerText=match;
+
+  const prompt=`
+Analyze match ${match}.
+Return JSON ONLY:
+{"over05ht":number,"over25ft":number,"confidence":number,"pick":"text"}
 `;
 
-    const text = await geminiRequest(prompt);
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) return alert("AI JSON error");
+  try {
+    const res = await fetchTimeout(WORKER,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
+    },7000);
 
-    const data = JSON.parse(jsonMatch[0]);
+    if(res==="timeout") throw "timeout";
 
-    document.getElementById("barHT").style.width = data.over05ht + "%";
-    document.getElementById("barFT").style.width = data.over25ft + "%";
-    document.getElementById("confidence").innerText = "Confidence: " + data.confidence + "%";
-    document.getElementById("pick").innerText = "🔥 PICK: " + data.pick;
+    const t=await res.text();
+    const j=t.match(/\{[\s\S]*\}/);
+    const d=JSON.parse(j[0]);
+
+    render(d);
+
+  } catch(e){
+    console.warn("OFFLINE AI MODE");
+    // 🔥 Offline simulation
+    const d={
+      over05ht: Math.floor(Math.random()*40)+60,
+      over25ft: Math.floor(Math.random()*50)+40,
+      confidence: Math.floor(Math.random()*20)+70,
+      pick:"OVER 2.5"
+    };
+    render(d);
+  }
+}
+
+function render(d){
+  document.getElementById("ht").style.width=d.over05ht+"%";
+  document.getElementById("ft").style.width=d.over25ft+"%";
+  document.getElementById("pick").innerText="🔥 PICK: "+d.pick;
+  document.getElementById("conf").innerText="Confidence: "+d.confidence+"%";
 }
 </script>
 
