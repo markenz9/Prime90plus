@@ -1,137 +1,165 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRIME90.PRO - STABLE LINK</title>
-    <style>
-        :root { --cyan: #00f2ff; --gold: #ffcc00; --carbon: #080808; }
-        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 10px; }
-        .tesla-app { max-width: 450px; margin: auto; background: #0a0a0a; border-radius: 40px; border: 1px solid #1a1a1a; overflow: hidden; box-shadow: 0 0 60px #000; }
-        .header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #111; }
-        .logo { font-size: 30px; font-weight: 900; letter-spacing: -2px; }
-        .logo span { color: var(--cyan); text-shadow: 0 0 15px var(--cyan); }
-        
-        /* Stealth Key Config */
-        .config { padding: 15px; background: #111; border-bottom: 1px solid #222; display: flex; gap: 8px; flex-wrap: wrap; }
-        .k-input { flex: 1; background: #000; border: 1px solid #333; border-radius: 12px; color: var(--cyan); padding: 12px; font-size: 10px; }
-        .btn { background: var(--cyan); color: #000; border: none; border-radius: 12px; padding: 10px 15px; font-weight: bold; cursor: pointer; font-size: 10px; }
+<meta charset="UTF-8">
+<title>PRIME90.PRO</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
 
-        .m-list { padding: 20px; background: #080808; display: grid; gap: 8px; max-height: 220px; overflow-y: auto; border-bottom: 1px solid #111; }
-        .m-btn { padding: 16px; background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 15px; color: #888; font-size: 12px; font-weight: bold; text-align: left; }
-        
-        .p90-display { padding: 35px 25px; min-height: 250px; }
-        .bar-wrap { height: 4px; background: #111; border-radius: 10px; margin-top: 10px; overflow: hidden; }
-        .bar-fill { height: 100%; width: 0; transition: 1.5s cubic-bezier(0.1, 0, 0, 1); }
-        .verdict-box { margin-top: 40px; padding: 30px; background: #0c0c0c; border-radius: 25px; border: 1px solid #151515; text-align: center; }
-        .v-text { font-size: 26px; font-weight: 900; color: var(--gold); margin-top: 10px; }
-        .msg { padding: 60px; text-align: center; color: #333; font-size: 12px; }
-    </style>
+<style>
+body {
+    background:#050505;
+    font-family: Inter, sans-serif;
+    color:white;
+    padding:20px;
+}
+.header {
+    font-size:28px;
+    font-weight:700;
+    text-align:center;
+    margin-bottom:20px;
+}
+.card {
+    background:#0b0b0b;
+    padding:20px;
+    border-radius:40px;
+    margin-bottom:20px;
+    box-shadow:0 0 20px rgba(0,242,255,0.1);
+}
+.hidden-key {
+    opacity:0.1;
+    font-size:10px;
+}
+button {
+    background:#00f2ff;
+    border:none;
+    padding:12px 20px;
+    border-radius:30px;
+    font-weight:600;
+    cursor:pointer;
+    margin:5px 0;
+}
+button:hover {background:#00c8d9;}
+.match-btn {
+    display:block;
+    width:100%;
+    text-align:left;
+}
+.bar {
+    width:100%;
+    background:#111;
+    border-radius:20px;
+    overflow:hidden;
+    height:20px;
+    margin:8px 0;
+}
+.bar-inner {
+    height:100%;
+    background:#00f2ff;
+    width:0%;
+    transition:1s;
+}
+.gold {
+    color:#ffcc00;
+    font-weight:700;
+}
+</style>
 </head>
+
 <body>
 
-<div class="tesla-app">
-    <div class="header">
-        <div class="logo">PRIME90<span>.PRO</span></div>
-        <div style="font-size:8px; color:#444; margin-top:8px; letter-spacing:3px;">FEB 20, 2026 | STABLE V31.0</div>
-    </div>
+<div class="header">⚡ PRIME90.PRO</div>
 
-    <div class="config">
-        <input type="password" id="sys_key" class="k-input" placeholder="PASTE KEY HERE (AIza...)">
-        <button class="btn" onclick="saveKey()">CONNECT</button>
-        <button class="btn" style="background:#333; color:#fff;" onclick="reset()">RESET</button>
-    </div>
+<div class="card hidden-key">
+    API KEY: <input id="apiKeyInput" placeholder="Enter Gemini API Key">
+</div>
 
-    <div id="matches" class="m-list"><div class="msg">AWAITING NEURAL CONNECTION...</div></div>
-    <div id="panel"><div class="msg">READY FOR TARGET ACQUISITION</div></div>
+<div class="card">
+    <button onclick="loadMatches()">🚀 Load Today Matches</button>
+    <div id="matches"></div>
+</div>
+
+<div class="card" id="analysisCard" style="display:none;">
+    <h3 id="matchTitle"></h3>
+
+    <div>Over 0.5 HT</div>
+    <div class="bar"><div id="barHT" class="bar-inner"></div></div>
+
+    <div>Over 2.5 FT</div>
+    <div class="bar"><div id="barFT" class="bar-inner"></div></div>
+
+    <div id="confidence"></div>
+    <div id="pick" class="gold"></div>
 </div>
 
 <script>
-    // ดึงค่ารหัสจากความจำเครื่อง
-    let currentKey = localStorage.getItem('p90_stable_key') || "";
-    
-    // เปลี่ยนชื่อโมเดลเป็นตัวมาตรฐานที่สุด เพื่อแก้ปัญหา "Model not found"
-    const MODEL_ID = "gemini-1.5-flash"; 
-    
-    if(currentKey) {
-        document.getElementById('sys_key').value = "********";
-        loadLiveFeed();
-    }
+const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
 
-    function saveKey() {
-        const k = document.getElementById('sys_key').value;
-        if(k && k !== "********") {
-            localStorage.setItem('p90_stable_key', k);
-            location.reload();
-        }
-    }
+const keyInput = document.getElementById("apiKeyInput");
+keyInput.value = localStorage.getItem("geminiKey") || "";
+keyInput.onchange = ()=> localStorage.setItem("geminiKey", keyInput.value);
 
-    function reset() {
-        localStorage.removeItem('p90_stable_key');
-        location.reload();
-    }
+function getKey() {
+    return localStorage.getItem("geminiKey");
+}
 
-    async function loadLiveFeed() {
-        const list = document.getElementById("matches");
-        // เรียกผ่าน v1beta เพื่อใช้ Google Search
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent?key=${currentKey}`;
-        
-        try {
-            const res = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: "Search Google for major football matches scheduled for today Feb 20, 2026. Return as JSON array ['Team A vs Team B', ...]. No other text." }] }],
-                    tools: [{ googleSearchRetrieval: {} }]
-                })
-            });
-            const data = await res.json();
-            
-            if(data.error) {
-                throw new Error(data.error.message);
-            }
-            
-            const matchData = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[[\s\S]*\]/)[0]);
-            list.innerHTML = "";
-            matchData.forEach(m => {
-                const b = document.createElement("div");
-                b.className = "m-btn"; b.innerHTML = "⚡ " + m.toUpperCase();
-                b.onclick = () => runScan(m);
-                list.appendChild(b);
-            });
-        } catch (e) { 
-            list.innerHTML = `<div class='msg' style='color:#ff3e3e'>SYNC ERROR: ${e.message}</div>`; 
-        }
-    }
+async function geminiRequest(prompt){
+    const key = getKey();
+    if(!key) return alert("Enter API Key first!");
 
-    async function runScan(match) {
-        const p = document.getElementById("panel");
-        p.innerHTML = "<div class='msg' style='color:var(--blue)'>SCANNING NEURAL STREAM...</div>";
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent?key=${currentKey}`;
-        
-        try {
-            const res = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: `วิเคราะห์ฟุตบอลคู่ ${match} วันนี้ 20 ก.พ. 2026 เน้นโอกาสสกอร์สูงแรก 0.5 และสูงเต็มเวลา 2.5 ตอบเป็น JSON: {'ht':85,'ft':75,'conf':90,'pick':'..'}` }] }]
-                })
-            });
-            const data = await res.json();
-            const json = JSON.parse(data.candidates[0].content.parts[0].text.match(/\{[\s\S]*\}/)[0]);
-            p.innerHTML = `
-                <div class="p90-display">
-                    <div style="text-align:center; font-weight:900; margin-bottom:30px; font-size:18px;">${match}</div>
-                    <div style="margin-bottom:20px; font-size:11px;">สูงแรก 0.5 HT <b>${json.ht}%</b> <div class="bar-wrap"><div class="bar-fill" id="b1" style="background:var(--blue)"></div></div></div>
-                    <div style="margin-bottom:20px; font-size:11px;">จบเกม 2.5 FT <b>${json.ft}%</b> <div class="bar-wrap"><div class="bar-fill" id="b2" style="background:#fff"></div></div></div>
-                    <div class="verdict-box"><div style="font-size:9px; color:#444; letter-spacing:4px;">PRIME90 VERDICT</div><div class="v-text">${json.pick.toUpperCase()}</div></div>
-                </div>`;
-            setTimeout(() => { 
-                document.getElementById("b1").style.width = json.ht+"%"; 
-                document.getElementById("b2").style.width = json.ft+"%"; 
-            }, 50);
-        } catch (e) { p.innerHTML = "<div class='msg' style='color:red'>ANALYSIS FAILED.</div>"; }
-    }
+    const res = await fetch(API_URL + "?key=" + key, {
+        method:"POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+            contents:[{parts:[{text: prompt}]}]
+        })
+    });
+    const data = await res.json();
+    return data.candidates[0].content.parts[0].text;
+}
+
+async function loadMatches(){
+    document.getElementById("matches").innerHTML = "Loading...";
+
+    const prompt = `
+Search Google for major football matches today Feb 20 2026.
+Return list only, one match per line.
+`;
+
+    const text = await geminiRequest(prompt);
+    const matches = text.split("\n").filter(x=>x.includes(" vs "));
+    let html="";
+    matches.forEach(m=>{
+        html += `<button class="match-btn" onclick="analyzeMatch('${m.replace(/'/g,"")}')">${m}</button>`;
+    });
+    document.getElementById("matches").innerHTML = html;
+}
+
+async function analyzeMatch(match){
+    document.getElementById("analysisCard").style.display="block";
+    document.getElementById("matchTitle").innerText = match;
+
+    const prompt = `
+Analyze football match: ${match}
+Return ONLY JSON:
+{
+"over05ht": number,
+"over25ft": number,
+"confidence": number,
+"pick": "text"
+}
+`;
+
+    const text = await geminiRequest(prompt);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const data = JSON.parse(jsonMatch[0]);
+
+    document.getElementById("barHT").style.width = data.over05ht + "%";
+    document.getElementById("barFT").style.width = data.over25ft + "%";
+    document.getElementById("confidence").innerText = "Confidence: " + data.confidence + "%";
+    document.getElementById("pick").innerText = "🔥 PICK: " + data.pick;
+}
 </script>
+
 </body>
 </html>
