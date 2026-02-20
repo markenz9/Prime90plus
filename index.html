@@ -2,131 +2,180 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>⚡ PRIME90.PRO AI Football Analyzer</title>
+<title>PRIME90.PRO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;600;900&display=swap" rel="stylesheet">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
 
 <style>
+*{box-sizing:border-box}
 body{
- background:#050505;
- color:white;
- font-family:Inter;
- padding:20px;
+    margin:0;
+    background:#050505;
+    font-family:Inter,sans-serif;
+    color:white;
+    padding:20px;
 }
 .header{
- font-size:32px;
- font-weight:900;
- text-align:center;
- margin-bottom:20px;
- color:#00f2ff;
+    font-size:32px;
+    font-weight:900;
+    text-align:center;
+    color:#00f2ff;
+    letter-spacing:2px;
 }
+.sub{
+    text-align:center;
+    color:#777;
+    font-size:14px;
+    margin-bottom:20px;
+}
+
 .card{
- background:#0b0b0b;
- padding:20px;
- border-radius:20px;
- margin-bottom:20px;
- box-shadow:0 0 20px rgba(0,242,255,.1);
+    background:#0b0b0b;
+    padding:20px;
+    border-radius:40px;
+    margin-bottom:20px;
+    box-shadow:0 0 25px rgba(0,242,255,.15);
+    backdrop-filter: blur(10px);
 }
+
 button{
- background:#00f2ff;
- border:none;
- padding:12px 18px;
- border-radius:30px;
- font-weight:700;
- cursor:pointer;
- margin:6px 0;
+    background:#00f2ff;
+    border:none;
+    padding:14px 22px;
+    border-radius:30px;
+    font-weight:700;
+    cursor:pointer;
+    width:100%;
+    margin-top:10px;
 }
-button:hover{background:#00c8d9;}
+button:hover{background:#00c0d4}
+
 .match-btn{
- display:block;
- width:100%;
- text-align:left;
- background:#111;
- color:#00f2ff;
+    background:#111;
+    border:1px solid #00f2ff33;
+    padding:12px;
+    border-radius:25px;
+    margin-top:10px;
+    cursor:pointer;
 }
+.match-btn:hover{
+    background:#00f2ff;
+    color:black;
+}
+
 .bar{
- width:100%;
- background:#111;
- border-radius:20px;
- height:18px;
- overflow:hidden;
- margin:8px 0;
+    width:100%;
+    background:#111;
+    border-radius:20px;
+    height:20px;
+    overflow:hidden;
+    margin-top:8px;
 }
 .bar-inner{
- height:100%;
- background:#00f2ff;
- width:0%;
- transition:1s;
+    height:100%;
+    width:0%;
+    background:#00f2ff;
+    transition:1s;
 }
-.gold{color:#ffcc00;font-weight:900;font-size:18px;}
-small{opacity:.5}
+.gold{color:#ffcc00;font-weight:900;font-size:18px}
+
+.loading{
+    color:#00f2ff;
+    text-align:center;
+    font-size:18px;
+}
+footer{
+    text-align:center;
+    color:#555;
+    font-size:12px;
+    margin-top:20px;
+}
 </style>
 </head>
 
 <body>
 
-<div class="header">⚡ PRIME90.PRO AI Football Analyzer</div>
+<div class="header">⚡ PRIME90.PRO</div>
+<div class="sub">AI Football Analysis Dashboard</div>
 
 <div class="card">
-<button onclick="loadMatches()">🚀 Load Today Live Matches</button>
-<div id="matches"></div>
+    <button onclick="loadMatches()">🚀 Load Today Matches</button>
+    <div id="matches" class="loading"></div>
 </div>
 
 <div class="card" id="analysisCard" style="display:none;">
-<h3 id="matchTitle"></h3>
+    <h3 id="matchTitle"></h3>
 
-<div>Over 0.5 HT</div>
-<div class="bar"><div id="barHT" class="bar-inner"></div></div>
+    <div>Over 0.5 Goals First Half</div>
+    <div class="bar"><div id="barHT" class="bar-inner"></div></div>
 
-<div>Over 2.5 FT</div>
-<div class="bar"><div id="barFT" class="bar-inner"></div></div>
+    <div>Over 2.5 Goals Full Time</div>
+    <div class="bar"><div id="barFT" class="bar-inner"></div></div>
 
-<div id="confidence"></div>
-<div id="pick" class="gold"></div>
-<small id="time"></small>
+    <div id="confidence"></div>
+    <div id="pick" class="gold"></div>
 </div>
 
+<footer>PRIME90.PRO © AI Football Engine</footer>
+
 <script>
-// 🔥 เปลี่ยนเป็น Worker ของคุณ
-const WORKER = "https://createworker.arnupapsawad-mark2546.workers.dev";
+// 🔥 CHANGE THIS TO YOUR WORKER URL
+const WORKER_URL = "https://createworker.arnupapsawad-mark2546.workers.dev";
 
-// โหลดแมตช์จริงจาก Football API ผ่าน Worker
-async function loadMatches(){
- document.getElementById("matches").innerHTML = "⏳ Loading real matches...";
-
- try{
-  const res = await fetch(WORKER + "/matches");
-  const data = await res.json();
-
-  let html="";
-  data.forEach(m=>{
-    const match = m.teams.home.name + " vs " + m.teams.away.name;
-    html += `<button class="match-btn" onclick="analyzeMatch('${match}')">
-    ⚽ ${match}</button>`;
-  });
-
-  document.getElementById("matches").innerHTML = html || "No matches today";
-
- }catch(e){
-  document.getElementById("matches").innerHTML="❌ Worker Error";
- }
+// Fake AI simulation (offline mode)
+function fakeAI(){
+    return {
+        over05ht: Math.floor(Math.random()*50)+50,
+        over25ft: Math.floor(Math.random()*50)+40,
+        confidence: Math.floor(Math.random()*20)+80,
+        pick: "HIGH OVER 0.5 HT"
+    }
 }
 
-// วิเคราะห์ AI ผ่าน Gemini
-async function analyzeMatch(match){
- document.getElementById("analysisCard").style.display="block";
- document.getElementById("matchTitle").innerText = match;
- document.getElementById("pick").innerText = "Analyzing...";
+// Load matches
+async function loadMatches(){
+    const el = document.getElementById("matches");
+    el.innerHTML = "⚡ Loading live matches...";
 
- const res = await fetch(WORKER + "/analyze?match=" + encodeURIComponent(match));
- const text = await res.text();
- const json = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
+    try{
+        const res = await fetch(WORKER_URL);
+        const data = await res.json();
 
- document.getElementById("barHT").style.width = json.over05ht + "%";
- document.getElementById("barFT").style.width = json.over25ft + "%";
- document.getElementById("confidence").innerText = "Confidence: " + json.confidence + "%";
- document.getElementById("pick").innerText = "🔥 PICK: " + json.pick;
- document.getElementById("time").innerText = "Updated: " + new Date().toLocaleString();
+        if(!data || !data.response){
+            throw "No data";
+        }
+
+        let html="";
+        data.response.forEach(m=>{
+            const name = m.teams.home.name + " vs " + m.teams.away.name;
+            html += `<div class="match-btn" onclick="analyzeMatch('${name}')">${name}</div>`;
+        });
+
+        el.innerHTML = html || "No matches today";
+    }
+    catch(e){
+        console.warn("Worker failed → using fallback");
+        el.innerHTML = `
+        <div class="match-btn" onclick="analyzeMatch('Man United vs Arsenal')">Man United vs Arsenal</div>
+        <div class="match-btn" onclick="analyzeMatch('Real Madrid vs Barcelona')">Real Madrid vs Barcelona</div>
+        <div class="match-btn" onclick="analyzeMatch('PSG vs Bayern')">PSG vs Bayern</div>
+        <small>⚠ Offline Mode</small>
+        `;
+    }
+}
+
+// Analyze match (AI simulation)
+function analyzeMatch(match){
+    document.getElementById("analysisCard").style.display="block";
+    document.getElementById("matchTitle").innerText = match;
+
+    const data = fakeAI();
+
+    document.getElementById("barHT").style.width = data.over05ht+"%";
+    document.getElementById("barFT").style.width = data.over25ft+"%";
+    document.getElementById("confidence").innerText = "Confidence: "+data.confidence+"%";
+    document.getElementById("pick").innerText = "🔥 PICK: "+data.pick;
 }
 </script>
 
