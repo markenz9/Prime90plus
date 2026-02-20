@@ -1,104 +1,66 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>prime90.co - AI Football Analysis</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #0f172a; }
-        .neon-text { text-shadow: 0 0 10px rgba(250, 204, 21, 0.5); }
-    </style>
-</head>
-<body class="text-white min-h-screen p-4 md:p-8">
-
-    <div class="max-w-4xl mx-auto">
-        <div class="text-center mb-10 mt-5">
-            <h1 class="text-4xl md:text-5xl font-extrabold text-yellow-400 neon-text mb-2">PRIME90.CO</h1>
-            <p class="text-gray-400 text-lg">ระบบ AI วิเคราะห์บอล แม่นยำระดับ 90%</p>
-        </div>
+async function fetchMatches() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
         
-        <div id="match-container" class="space-y-6">
-            <div class="flex justify-center items-center py-10">
-                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
-            </div>
-        </div>
-    </div>
+        const container = document.getElementById('match-container');
+        container.innerHTML = ''; 
 
-    <script>
-        // ⚠️ สำคัญมาก: เอา URL Worker ของคุณมาวางตรงนี้แทน (เอามาจากรูปที่ 3 ที่คุณเคยทำไว้)
-        const API_URL = "https://prime90api.arnupapsawad-mark2546.workers.dev";
-
-        async function fetchMatches() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                
-                const container = document.getElementById('match-container');
-                container.innerHTML = ''; 
-
-                data.forEach(match => {
-                    const card = `
-                        <div class="bg-slate-800 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 transition transform hover:-translate-y-1 duration-300">
-                            <div class="bg-slate-900 px-5 py-3 flex justify-between items-center border-b border-slate-700">
-                                <span class="text-sm font-semibold text-gray-300 uppercase tracking-wider">${match.league}</span>
-                                <div class="flex space-x-3 text-sm">
-                                    <span class="text-yellow-500 font-bold">${match.date_text}</span>
-                                    <span class="bg-blue-600/20 text-blue-400 px-2 rounded font-bold">${match.time} น.</span>
-                                </div>
-                            </div>
-
-                            <div class="p-6">
-                                <div class="flex justify-between items-center mb-6">
-                                    <div class="flex flex-col items-center w-1/3 text-center">
-                                        <img src="${match.logo_home}" alt="Home" class="w-16 h-16 object-contain mb-2 drop-shadow-lg">
-                                        <span class="font-bold text-lg">${match.team_home}</span>
-                                    </div>
-                                    <div class="w-1/3 text-center flex flex-col items-center">
-                                        <span class="text-3xl font-black text-slate-600 mb-1">VS</span>
-                                        <span class="bg-slate-700 px-3 py-1 rounded-full text-sm text-yellow-400 font-semibold border border-yellow-500/30">${match.handicap}</span>
-                                    </div>
-                                    <div class="flex flex-col items-center w-1/3 text-center">
-                                        <img src="${match.logo_away}" alt="Away" class="w-16 h-16 object-contain mb-2 drop-shadow-lg">
-                                        <span class="font-bold text-lg">${match.team_away}</span>
-                                    </div>
-                                </div>
-
-                                <div class="bg-slate-900/50 rounded-xl p-5 border border-slate-700/50">
-                                    <div class="flex items-center gap-2 mb-3">
-                                        <span class="text-xl">🤖</span>
-                                        <h3 class="font-bold text-green-400 text-lg">AI ทีเด็ด: ${match.ai_predict}</h3>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <div class="flex justify-between text-xs text-gray-400 mb-1 font-semibold">
-                                            <span>ชนะ ${match.win_prob}%</span>
-                                            <span>เสมอ ${match.draw_prob}%</span>
-                                            <span>แพ้ ${match.lose_prob}%</span>
-                                        </div>
-                                        <div class="w-full h-3 flex rounded-full overflow-hidden bg-slate-700">
-                                            <div style="width: ${match.win_prob}%" class="bg-green-500"></div>
-                                            <div style="width: ${match.draw_prob}%" class="bg-gray-400"></div>
-                                            <div style="width: ${match.lose_prob}%" class="bg-red-500"></div>
-                                        </div>
-                                    </div>
-
-                                    <p class="text-sm text-gray-300 leading-relaxed bg-slate-800/80 p-3 rounded-lg border-l-4 border-yellow-500">
-                                        <span class="font-bold text-white">วิเคราะห์:</span> ${match.reason}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML += card;
-                });
-            } catch (error) {
-                document.getElementById('match-container').innerHTML = '<p class="text-red-500 text-center text-xl font-bold py-10">❌ ไม่สามารถดึงข้อมูล AI ได้ในขณะนี้</p>';
-            }
+        // 🌟 เพิ่มส่วนแสดงผล "คัดสเต็ป"
+        if(data.step && data.step.length > 0) {
+            let stepHtml = `
+                <div class="bg-gradient-to-r from-yellow-500 to-red-600 p-1 rounded-2xl mb-8 shadow-lg animate-pulse">
+                    <div class="bg-slate-900 rounded-xl p-4 text-center">
+                        <h2 class="text-2xl font-black text-yellow-400 mb-2">🔥 คัดสเต็ป 3 ตัวจริงวันนี้ 🔥</h2>
+                        <p class="text-white font-bold text-xl">${data.step.join(' - ')}</p>
+                    </div>
+                </div>`;
+            container.innerHTML = stepHtml;
         }
 
-        fetchMatches();
-    </script>
-</body>
-</html>
+        data.matches.forEach(match => {
+            const card = `
+                <div class="bg-slate-800 rounded-2xl overflow-hidden shadow-2xl border ${match.is_sure ? 'border-yellow-500 border-2' : 'border-slate-700'} mb-6">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-xs bg-blue-600 px-2 py-1 rounded-full uppercase">${match.league}</span>
+                            <span class="text-yellow-400 font-bold">${match.time} น.</span>
+                        </div>
+                        <div class="flex justify-around items-center mb-6">
+                            <div class="text-center w-1/3">
+                                <img src="${match.logo_home}" class="w-12 h-12 mx-auto mb-2">
+                                <p class="font-bold text-sm">${match.team_home}</p>
+                            </div>
+                            <div class="text-center font-black text-2xl text-slate-600">VS</div>
+                            <div class="text-center w-1/3">
+                                <img src="${match.logo_away}" class="w-12 h-12 mx-auto mb-2">
+                                <p class="font-bold text-sm">${match.team_away}</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+                            <div class="bg-slate-900 p-2 rounded-lg">
+                                <p class="text-[10px] text-gray-400">ต่อ/รอง</p>
+                                <p class="text-xs text-green-400 font-bold">${match.handicap}</p>
+                            </div>
+                            <div class="bg-slate-900 p-2 rounded-lg">
+                                <p class="text-[10px] text-gray-400">สูงครึ่งแรก</p>
+                                <p class="text-xs text-yellow-400 font-bold">${match.ht_ou}</p>
+                            </div>
+                            <div class="bg-slate-900 p-2 rounded-lg">
+                                <p class="text-[10px] text-gray-400">สูงเต็มเวลา</p>
+                                <p class="text-xs text-red-400 font-bold">${match.ft_ou}</p>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900 p-3 rounded-lg border-l-4 border-yellow-500">
+                            <p class="text-xs italic text-gray-300">" ${match.reason} "</p>
+                            <div class="mt-2 h-1 w-full bg-gray-700 rounded-full">
+                                <div class="h-1 bg-yellow-500 rounded-full" style="width: ${match.confidence}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += card;
+        });
+    } catch (e) { /* handle error */ }
+}
