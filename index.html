@@ -1,45 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>PRIME90.PRO AI</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRIME90 AI FOOTBALL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body { background:#050505; color:#00f2ff; font-family:sans-serif; padding:20px }
-.card { background:#0b0b0b; padding:20px; border-radius:30px; margin-bottom:15px }
-button { background:#00f2ff; border:none; padding:12px 20px; border-radius:30px; font-weight:bold }
-.bar { height:20px; background:#111; border-radius:10px; overflow:hidden }
-.bar div { height:100%; background:#00f2ff; transition:1s }
-.gold { color:#ffcc00; font-size:22px }
+body {
+  background:black;
+  color:#00ffea;
+  font-family: monospace;
+  text-align:center;
+}
+h1 {
+  font-size:28px;
+  text-shadow:0 0 20px #00ffe1;
+}
+.card {
+  border:1px solid #00ffe1;
+  padding:10px;
+  margin:10px;
+  box-shadow:0 0 10px #00ffe1;
+}
+.ai {
+  color:#ff00ff;
+}
+.odds {
+  color:#00ff00;
+}
+.rank {
+  color:yellow;
+}
 </style>
 </head>
 <body>
 
-<h1>⚡ PRIME90.PRO AI FOOTBALL</h1>
-
-<div class="card">
-<input id="match" placeholder="Man United vs Chelsea">
-<button onclick="analyze()">Analyze AI</button>
-</div>
-
-<div class="card" id="result"></div>
+<h1>⚡ PRIME90 AI FOOTBALL TODAY</h1>
+<div id="app">Loading...</div>
 
 <script>
-async function analyze(){
-  const match = document.getElementById("match").value
-  const r = await fetch("https://prime90-worker.arnupapsawad-mark2546.workers.dev/api/analyze?match=" + encodeURIComponent(match))
-  const data = await r.json()
-  const text = data.candidates[0].content.parts[0].text
-  const json = JSON.parse(text.match(/\{[\s\S]*\}/)[0])
+const API="https://prime90-worker.arnupapsawad-mark2546.workers.dev/api/matches"
 
-  document.getElementById("result").innerHTML = `
-  <div>Over 0.5 HT</div><div class="bar"><div style="width:${json.over05ht}%"></div></div>
-  <div>Over 2.5 FT</div><div class="bar"><div style="width:${json.over25ft}%"></div></div>
-  <div>Home Win: ${json.winHome}% | Away Win: ${json.winAway}%</div>
-  <div>Confidence: ${json.confidence}%</div>
-  <div class="gold">🔥 PICK: ${json.pick}</div>
+async function load() {
+ const r = await fetch(API)
+ const d = await r.json()
+ let html=""
+
+ d.forEach(m=>{
+  html += `
+  <div class="card">
+   <b>${m.home}</b> vs <b>${m.away}</b><br>
+   League: ${m.league}<br>
+   Time: ${new Date(m.time).toLocaleString("th-TH")}<br>
+
+   <span class="ai">AI Win: ${m.ai.win}%</span><br>
+   AI Over/Under: ${m.ai.over?"OVER":"UNDER"}<br>
+
+   <span class="odds">Odds H: ${m.ai.oddsH} | A: ${m.ai.oddsA}</span><br>
+   <span class="rank">AI Rank: ⭐ ${m.ai.rank}/5</span>
+  </div>
   `
+ })
+
+ document.getElementById("app").innerHTML = html || "❌ No matches today"
 }
+
+load()
+setInterval(load, 300000) // auto refresh 5 นาที
 </script>
 
 </body>
