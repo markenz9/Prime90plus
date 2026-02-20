@@ -1,203 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>PRIME90.PRO ULTRA</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PRIME90 AI Football Analyzer</title>
 
 <style>
 body {
-  background:#000;
-  font-family: Inter, sans-serif;
-  color:#fff;
-  padding:20px;
+  font-family: Arial, sans-serif;
+  background: #0a0f1f;
+  color: white;
+  text-align: center;
+  padding: 20px;
 }
-.glass {
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.card {
   background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(20px);
-  border-radius:30px;
-  padding:20px;
-  margin-bottom:20px;
-  border:1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+  box-shadow: 0 0 20px rgba(0,255,255,0.2);
 }
+
 button {
-  background: linear-gradient(90deg,#00f2ff,#ff00ff);
-  border:none;
-  padding:12px 25px;
-  border-radius:30px;
-  font-weight:bold;
-  color:black;
-  cursor:pointer;
+  padding: 12px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  background: #00ffd5;
+  color: black;
+  cursor: pointer;
 }
-.bar {
-  height:16px;
-  background:#111;
-  border-radius:10px;
-  overflow:hidden;
+
+button:hover {
+  background: #00c0a0;
 }
-.fill {
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,#00f2ff,#ffcc00);
-  transition:1s;
-}
-.radar {
-  width:200px;
-  height:200px;
-  border-radius:50%;
-  border:2px solid #00f2ff;
-  position:relative;
-  margin:auto;
-}
-.radar::after {
-  content:"";
-  position:absolute;
-  width:50%;
-  height:2px;
-  background:#00f2ff;
-  top:50%;
-  left:50%;
-  transform-origin:left;
-  animation:spin 2s linear infinite;
-}
-@keyframes spin {
-  0%{transform:rotate(0deg);}
-  100%{transform:rotate(360deg);}
+
+pre {
+  text-align: left;
+  background: black;
+  padding: 10px;
+  border-radius: 10px;
+  max-height: 300px;
+  overflow: auto;
 }
 </style>
 </head>
 
 <body>
 
-<h1>⚡ PRIME90.PRO ULTRA</h1>
+<h1>⚡ PRIME90 AI Football Analyzer</h1>
 
-<div class="glass">
-<button onclick="loadMatches()">🚀 Load Matches (Cache Mode)</button>
-<div id="matches"></div>
-</div>
-
-<div class="glass">
-<h2 id="matchTitle">Select Match</h2>
-
-<p>Over 0.5 HT</p>
-<div class="bar"><div id="ht" class="fill"></div></div>
-
-<p>Over 2.5 FT</p>
-<div class="bar"><div id="ft" class="fill"></div></div>
-
-<h2 id="pick"></h2>
-<h3 id="conf"></h3>
-
-<div class="radar"></div>
+<div class="card">
+  <p>กดปุ่มเพื่อให้ AI วิเคราะห์คู่ฟุตบอล</p>
+  <button onclick="analyze()">Analyze Match</button>
+  <pre id="result">Waiting...</pre>
 </div>
 
 <script>
-const WORKER="https://createworker.arnupapsawad-mark2546.workers.dev/gemini";
+// 🔥 ใส่ Worker URL ของคุณตรงนี้
+const WORKER_URL = "https://prime90-worker.arnupapsawad-mark2546.workers.dev/gemini";
 
-// 🔥 Timeout กันค้าง
-function fetchTimeout(url,options,timeout=8000){
-  return Promise.race([
-    fetch(url,options),
-    new Promise((_,r)=>setTimeout(()=>r("timeout"),timeout))
-  ]);
-}
-
-// 🔥 Cache Matches
-let cacheMatches = JSON.parse(localStorage.getItem("matchesCache")||"null");
-
-// Fake fallback data
-const fakeMatches = [
-"Man United vs Liverpool",
-"Real Madrid vs Barcelona",
-"Arsenal vs Chelsea",
-"Bayern vs Dortmund",
-"PSG vs Marseille"
-];
-
-async function loadMatches(){
-  if(cacheMatches){
-    console.log("CACHE USED");
-    showMatches(cacheMatches);
-    return;
-  }
-
-  document.getElementById("matches").innerHTML="Loading AI matches...";
-
-  const prompt="List 5 football matches today. Plain list.";
-
-  const res = await fetchTimeout(WORKER,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
-  });
-
-  if(res==="timeout"){
-    console.warn("AI TIMEOUT → FAKE DATA");
-    cacheMatches=fakeMatches;
-    localStorage.setItem("matchesCache",JSON.stringify(cacheMatches));
-    showMatches(cacheMatches);
-    return;
-  }
-
-  const data = await res.json();
-  const text=data.candidates[0].content.parts[0].text;
-  const list=text.split("\n").filter(x=>x.trim());
-
-  cacheMatches=list;
-  localStorage.setItem("matchesCache",JSON.stringify(list));
-  showMatches(list);
-}
-
-function showMatches(list){
-  let html="";
-  list.forEach(m=>{
-    html+=`<button onclick="analyze('${m}')">${m}</button><br><br>`;
-  });
-  document.getElementById("matches").innerHTML=html;
-}
-
-// 🔥 วิเคราะห์ AI + Offline fallback
-async function analyze(match){
-  document.getElementById("matchTitle").innerText=match;
-
-  const prompt=`
-Analyze match ${match}.
-Return JSON ONLY:
-{"over05ht":number,"over25ft":number,"confidence":number,"pick":"text"}
-`;
+async function analyze() {
+  const resultBox = document.getElementById("result");
+  resultBox.textContent = "⏳ AI is analyzing...";
 
   try {
-    const res = await fetchTimeout(WORKER,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})
-    },7000);
-
-    if(res==="timeout") throw "timeout";
-
-    const t=await res.text();
-    const j=t.match(/\{[\s\S]*\}/);
-    const d=JSON.parse(j[0]);
-
-    render(d);
-
-  } catch(e){
-    console.warn("OFFLINE AI MODE");
-    // 🔥 Offline simulation
-    const d={
-      over05ht: Math.floor(Math.random()*40)+60,
-      over25ft: Math.floor(Math.random()*50)+40,
-      confidence: Math.floor(Math.random()*20)+70,
-      pick:"OVER 2.5"
-    };
-    render(d);
+    const res = await fetch(WORKER_URL);
+    const data = await res.text();
+    resultBox.textContent = data;
+  } catch (err) {
+    resultBox.textContent = "❌ Error: " + err.message;
   }
-}
-
-function render(d){
-  document.getElementById("ht").style.width=d.over05ht+"%";
-  document.getElementById("ft").style.width=d.over25ft+"%";
-  document.getElementById("pick").innerText="🔥 PICK: "+d.pick;
-  document.getElementById("conf").innerText="Confidence: "+d.confidence+"%";
 }
 </script>
 
