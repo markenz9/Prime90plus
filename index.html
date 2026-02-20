@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>PRIME90.PRO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
 
 <style>
 body {
@@ -14,8 +14,8 @@ body {
     padding:20px;
 }
 .header {
-    font-size:28px;
-    font-weight:700;
+    font-size:32px;
+    font-weight:900;
     text-align:center;
     margin-bottom:20px;
 }
@@ -24,33 +24,26 @@ body {
     padding:20px;
     border-radius:40px;
     margin-bottom:20px;
-    box-shadow:0 0 20px rgba(0,242,255,0.1);
-}
-.hidden-key {
-    opacity:0.1;
-    font-size:10px;
+    box-shadow:0 0 25px rgba(0,242,255,0.15);
 }
 button {
     background:#00f2ff;
     border:none;
-    padding:12px 20px;
+    padding:14px;
     border-radius:30px;
-    font-weight:600;
+    font-weight:700;
     cursor:pointer;
-    margin:5px 0;
+    width:100%;
+    margin:6px 0;
 }
 button:hover {background:#00c8d9;}
-.match-btn {
-    display:block;
-    width:100%;
-    text-align:left;
-}
+.match-btn {text-align:left;}
 .bar {
     width:100%;
     background:#111;
     border-radius:20px;
     overflow:hidden;
-    height:20px;
+    height:18px;
     margin:8px 0;
 }
 .bar-inner {
@@ -61,7 +54,14 @@ button:hover {background:#00c8d9;}
 }
 .gold {
     color:#ffcc00;
-    font-weight:700;
+    font-weight:900;
+    font-size:18px;
+}
+pre {
+    font-size:11px;
+    opacity:0.7;
+    max-height:200px;
+    overflow:auto;
 }
 </style>
 </head>
@@ -70,88 +70,84 @@ button:hover {background:#00c8d9;}
 
 <div class="header">⚡ PRIME90.PRO</div>
 
-<div class="card hidden-key">
-    API KEY: <input id="apiKeyInput" placeholder="Enter Gemini API Key">
-</div>
-
 <div class="card">
-    <button onclick="loadMatches()">🚀 Load Today Matches</button>
-    <div id="matches"></div>
+<button onclick="loadMatches()">🚀 LOAD TODAY MATCHES</button>
+<div id="matches"></div>
 </div>
 
 <div class="card" id="analysisCard" style="display:none;">
-    <h3 id="matchTitle"></h3>
+<h3 id="matchTitle"></h3>
 
-    <div>Over 0.5 HT</div>
-    <div class="bar"><div id="barHT" class="bar-inner"></div></div>
+<div>Over 0.5 HT</div>
+<div class="bar"><div id="barHT" class="bar-inner"></div></div>
 
-    <div>Over 2.5 FT</div>
-    <div class="bar"><div id="barFT" class="bar-inner"></div></div>
+<div>Over 2.5 FT</div>
+<div class="bar"><div id="barFT" class="bar-inner"></div></div>
 
-    <div id="confidence"></div>
-    <div id="pick" class="gold"></div>
+<div id="confidence"></div>
+<div id="pick" class="gold"></div>
+</div>
+
+<div class="card">
+<h4>DEBUG AI RESPONSE</h4>
+<pre id="debug"></pre>
 </div>
 
 <script>
-const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+// 🔥 ใส่ Worker URL ของคุณตรงนี้
+const API_URL = "https://createworker.arnupapsawad-mark2546.workers.dev";
 
-const keyInput = document.getElementById("apiKeyInput");
-keyInput.value = localStorage.getItem("geminiKey") || "";
-keyInput.onchange = ()=> localStorage.setItem("geminiKey", keyInput.value);
-
-function getKey() {
-    return localStorage.getItem("geminiKey");
-}
-
+// AI Request
 async function geminiRequest(prompt){
-    const key = getKey();
-    if(!key) return alert("Enter API Key first!");
-
-    const res = await fetch(API_URL + "?key=" + key, {
+    const res = await fetch(API_URL, {
         method:"POST",
         headers: {"Content-Type":"application/json"},
         body: JSON.stringify({
             contents:[{parts:[{text: prompt}]}]
         })
     });
+
     const data = await res.json();
-    return data.candidates[0].content.parts[0].text;
+    document.getElementById("debug").innerText = JSON.stringify(data,null,2);
+
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 }
 
+// Load Matches
 async function loadMatches(){
-    document.getElementById("matches").innerHTML = "Loading...";
+    document.getElementById("matches").innerHTML = "⏳ Loading...";
 
     const prompt = `
-Search Google for major football matches today Feb 20 2026.
-Return list only, one match per line.
+List 10 major football matches today worldwide.
+Format: Team A vs Team B only.
 `;
 
     const text = await geminiRequest(prompt);
     const matches = text.split("\n").filter(x=>x.includes(" vs "));
+    
     let html="";
     matches.forEach(m=>{
         html += `<button class="match-btn" onclick="analyzeMatch('${m.replace(/'/g,"")}')">${m}</button>`;
     });
-    document.getElementById("matches").innerHTML = html;
+
+    document.getElementById("matches").innerHTML = html || "No matches found";
 }
 
+// Analyze Match
 async function analyzeMatch(match){
     document.getElementById("analysisCard").style.display="block";
     document.getElementById("matchTitle").innerText = match;
 
     const prompt = `
-Analyze football match: ${match}
+Analyze football match ${match}.
 Return ONLY JSON:
-{
-"over05ht": number,
-"over25ft": number,
-"confidence": number,
-"pick": "text"
-}
+{"over05ht":0-100,"over25ft":0-100,"confidence":0-100,"pick":"text"}
 `;
 
     const text = await geminiRequest(prompt);
     const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if(!jsonMatch) return alert("AI JSON error");
+
     const data = JSON.parse(jsonMatch[0]);
 
     document.getElementById("barHT").style.width = data.over05ht + "%";
