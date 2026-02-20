@@ -3,97 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRIME90 - TESLA AUTO</title>
+    <title>PRIME90.PRO - TESLA NEURAL LINK</title>
     <style>
-        :root { --blue: #00f2ff; --gold: #ffcc00; --dark: #050505; }
-        body { background: #000; color: #fff; font-family: sans-serif; margin: 0; padding: 15px; }
-        .app { max-width: 450px; margin: auto; background: #0a0a0a; border-radius: 40px; border: 1px solid #222; overflow: hidden; box-shadow: 0 0 50px #000; }
-        .header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #111; }
+        :root { --neon-blue: #00f2ff; --neon-gold: #ffcc00; --carbon: #080808; }
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 15px; -webkit-font-smoothing: antialiased; }
+        .tesla-app { max-width: 450px; margin: auto; background: var(--carbon); border-radius: 40px; border: 1px solid #1a1a1a; overflow: hidden; box-shadow: 0 0 60px rgba(0,242,255,0.1); }
+        .header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #111; background: linear-gradient(180deg, #111, #080808); }
         .logo { font-size: 32px; font-weight: 900; letter-spacing: -2px; }
-        .logo span { color: var(--blue); text-shadow: 0 0 15px var(--blue); }
-        .match-box { padding: 20px; background: #080808; }
+        .logo span { color: var(--neon-blue); text-shadow: 0 0 15px var(--neon-blue); }
+        .status { font-size: 8px; color: #444; margin-top: 10px; letter-spacing: 3px; text-transform: uppercase; }
+        .match-section { padding: 25px; background: #050505; border-bottom: 1px solid #111; }
         .label { font-size: 10px; color: #333; margin-bottom: 15px; font-weight: bold; letter-spacing: 2px; }
-        .match-list { display: grid; gap: 8px; max-height: 250px; overflow-y: auto; }
-        .match-item { padding: 18px; background: #111; border: 1px solid #1a1a1a; border-radius: 18px; color: #888; font-size: 13px; font-weight: bold; text-align: center; cursor: pointer; }
-        .match-item:active { border-color: var(--blue); color: #fff; transform: scale(0.97); }
-        .panel { padding: 30px 25px; min-height: 200px; }
-        .m-title { text-align: center; font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 30px; }
-        .bar-row { margin-bottom: 25px; }
-        .bar-info { display: flex; justify-content: space-between; font-size: 11px; color: #555; margin-bottom: 8px; }
-        .bar-info b { color: var(--blue); }
-        .bar-bg { height: 4px; background: #111; border-radius: 10px; }
-        .bar-fill { height: 100%; width: 0; transition: 1s cubic-bezier(0.1, 0, 0, 1); border-radius: 10px; }
-        .verdict { margin-top: 35px; padding: 25px; background: #0c0c0c; border-radius: 20px; border: 1px solid #151515; text-align: center; }
-        .v-pick { font-size: 26px; font-weight: 900; color: var(--gold); margin-top: 10px; }
-        .msg { padding: 60px; text-align: center; color: #222; font-size: 12px; }
+        .match-list { display: grid; gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 5px; }
+        .match-item { padding: 18px; background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 18px; color: #888; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; transition: 0.2s; }
+        .match-item:active { border-color: var(--neon-blue); color: #fff; transform: scale(0.97); background: #111; }
+        .analysis-panel { padding: 35px 25px; min-height: 220px; }
+        .m-title { text-align: center; font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 30px; border-bottom: 1px solid #222; padding-bottom: 20px; }
+        .stat-row { margin-bottom: 25px; }
+        .stat-info { display: flex; justify-content: space-between; font-size: 12px; color: #555; margin-bottom: 10px; }
+        .stat-info b { color: var(--neon-blue); font-size: 14px; }
+        .bar-bg { height: 4px; background: #111; border-radius: 10px; overflow: hidden; }
+        .bar-fill { height: 100%; width: 0; transition: 1.5s cubic-bezier(0.1, 0, 0, 1); border-radius: 10px; }
+        .verdict-box { margin-top: 40px; padding: 30px; background: #0c0c0c; border-radius: 25px; border: 1px solid #151515; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .v-label { font-size: 9px; color: #333; letter-spacing: 4px; margin-bottom: 10px; }
+        .v-pick { font-size: 28px; font-weight: 900; color: var(--neon-gold); text-shadow: 0 0 20px rgba(255,204,0,0.3); }
+        .msg { padding: 80px 20px; text-align: center; color: #222; font-size: 13px; letter-spacing: 1px; line-height: 1.6; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
     </style>
 </head>
 <body>
-<div class="app">
+
+<div class="tesla-app">
     <div class="header">
         <div class="logo">PRIME90<span>.PRO</span></div>
-        <div id="status" style="font-size:8px; color:#333; margin-top:10px;">CORE V22.0 | AUTO-SYNC ACTIVE</div>
+        <div id="p90-status" class="status">NEURAL LINK V24.0 | INITIALIZING...</div>
     </div>
-    <div class="match-box">
-        <div class="label">LIVE MATCHES TODAY (AUTO)</div>
-        <div id="match-list" class="match-list"><div class="msg">SYNCING GLOBAL FEED...</div></div>
+
+    <div class="match-section">
+        <div class="label">LIVE TARGET ACQUISITION (AUTO-SEARCH)</div>
+        <div id="match-list" class="match-list">
+            <div class="msg">SCANNING GOOGLE SATELLITE...</div>
+        </div>
     </div>
-    <div id="panel"><div class="msg">SELECT TARGET TO ANALYZE</div></div>
+
+    <div id="p90-display">
+        <div class="msg">SYSTEM READY.<br>SELECT TARGET TO BEGIN SCAN.</div>
+    </div>
 </div>
+
 <script>
-    // กุญแจ Gemini ของคุณ
-    const MY_KEY = "AIzaSyDhnTW1XRWRnrROgLVji-fxMQsQc-1bRX4";
+    // 🔑 กุญแจ API ใหม่ที่คุณให้มา
+    const MY_API_KEY = "AIzaSyCfVLbBB6c4SJmDcvUzz02eAjPiBOZKotc";
 
-    window.onload = () => { getMatches(); };
+    window.onload = () => { autoSearchMatches(); };
 
-    // ดึงคู่บอลจริงจาก Global Feed (ไม่ต้องใช้ Key ไม่ค้างแน่นอน)
-    async function getMatches() {
+    // 📡 ฟังก์ชันค้นหาคู่บอลจริงอัตโนมัติ (ไม่ต้องแก้โค้ดทุกวัน)
+    async function autoSearchMatches() {
         const list = document.getElementById("match-list");
-        try {
-            const res = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent("https://www.scorebat.com/video-api/v3/feed"));
-            const data = await res.json();
-            const matches = JSON.parse(data.contents).response;
-            list.innerHTML = "";
-            matches.slice(0, 15).forEach(m => {
-                const b = document.createElement("div");
-                b.className = "match-item"; b.innerHTML = m.title.toUpperCase();
-                b.onclick = () => analyze(m.title);
-                list.appendChild(b);
-            });
-        } catch (e) {
-            list.innerHTML = "<div class='msg'>FEED ERROR. RETRYING...</div>";
-            setTimeout(getMatches, 3000);
-        }
-    }
+        const status = document.getElementById("p90-status");
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${MY_API_KEY}`;
 
-    async function analyze(match) {
-        const panel = document.getElementById("panel");
-        panel.innerHTML = "<div class='msg' style='color:var(--blue)'>SCANNING DATA...</div>";
         try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${MY_KEY}`, {
+            const res = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: `วิเคราะห์บอลคู่ ${match} วันที่ 20 ก.พ. 2026 ตอบ JSON: {'ht':85,'ft':75,'conf':90,'pick':'..'}` }] }]
+                    contents: [{ parts: [{ text: "Search Google for major football matches today Feb 20, 2026. Provide a list of 10 matches. Return as a plain JSON array of strings only, like this: ['Team A vs Team B', 'Team C vs Team D']. No other text." }] }],
+                    tools: [{ googleSearchRetrieval: {} }] // ใช้ระบบค้นหาจริงของ Google
+                })
+            });
+            const data = await res.json();
+            const rawText = data.candidates[0].content.parts[0].text;
+            const matches = JSON.parse(rawText.match(/\[[\s\S]*\]/)[0]);
+            
+            list.innerHTML = "";
+            matches.forEach(m => {
+                const btn = document.createElement("div");
+                btn.className = "match-item";
+                btn.innerHTML = "⚡ " + m.toUpperCase();
+                btn.onclick = () => startNeuralScan(m);
+                list.appendChild(btn);
+            });
+            status.innerHTML = "SYSTEM ONLINE | FEB 20, 2026";
+        } catch (e) {
+            list.innerHTML = "<div class='msg'>CONNECTION INTERRUPTED.<br>RETRYING IN 5 SECONDS...</div>";
+            setTimeout(autoSearchMatches, 5000);
+        }
+    }
+
+    // 🧠 ฟังก์ชันวิเคราะห์ด้วย AI Gemini 1.5 Flash
+    async function startNeuralScan(match) {
+        const display = document.getElementById("p90-display");
+        display.innerHTML = "<div class='msg' style='color:var(--neon-blue);'>INCOMING DATA STREAM...</div>";
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${MY_API_KEY}`;
+
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `วิเคราะห์ฟุตบอลคู่ ${match} วันที่ 20 ก.พ. 2026 เน้นโอกาสสกอร์สูงแรกและสูงเต็มเวลา ตอบเป็น JSON เท่านั้น: {'ht':85,'ft':75,'conf':90,'pick':'..'}` }] }]
                 })
             });
             const data = await res.json();
             const d = JSON.parse(data.candidates[0].content.parts[0].text.match(/\{[\s\S]*\}/)[0]);
-            panel.innerHTML = `
+
+            display.innerHTML = `
                 <div class="result-card">
                     <div class="m-title">${match}</div>
-                    <div class="bar-row"><div class="bar-info">สูงแรก <b>${d.ht}%</b></div><div class="bar-bg"><div class="bar-fill" id="g-ht" style="background:var(--blue)"></div></div></div>
-                    <div class="bar-row"><div class="bar-info">สูงเต็มเวลา <b>${d.ft}%</b></div><div class="bar-bg"><div class="bar-fill" id="g-ft" style="background:#fff"></div></div></div>
-                    <div class="bar-row"><div class="bar-info">CONFIDENCE <b>${d.conf}%</b></div><div class="bar-bg"><div class="bar-fill" id="g-conf" style="background:var(--gold)"></div></div></div>
-                    <div class="verdict"><div style="font-size:9px; color:#333; letter-spacing:3px;">FINAL VERDICT</div><div class="v-pick">${d.pick.toUpperCase()}</div></div>
-                </div>`;
+                    <div class="stat-row">
+                        <div class="stat-info">OVER 0.5 HT (สูงแรก) <b>${d.ht}%</b></div>
+                        <div class="bar-bg"><div class="bar-fill" id="bar-ht" style="background:var(--neon-blue);"></div></div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-info">OVER 2.5 FT (สูงเต็มเวลา) <b>${d.ft}%</b></div>
+                        <div class="bar-bg"><div class="bar-fill" id="bar-ft" style="background:#fff;"></div></div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-info">CONFIDENCE LEVEL <b>${d.conf}%</b></div>
+                        <div class="bar-bg"><div class="bar-fill" id="bar-conf" style="background:var(--neon-gold);"></div></div>
+                    </div>
+                    <div class="verdict-box">
+                        <div class="v-label">FINAL NEURAL VERDICT</div>
+                        <div class="v-pick">${d.pick.toUpperCase()}</div>
+                    </div>
+                </div>
+            `;
             setTimeout(() => {
-                document.getElementById("g-ht").style.width = d.ht + "%";
-                document.getElementById("g-ft").style.width = d.ft + "%";
-                document.getElementById("g-conf").style.width = d.conf + "%";
-            }, 50);
-        } catch (e) { panel.innerHTML = "<div class='msg' style='color:red'>ANALYSIS ERROR. TRY AGAIN.</div>"; }
+                document.getElementById("bar-ht").style.width = d.ht + "%";
+                document.getElementById("bar-ft").style.width = d.ft + "%";
+                document.getElementById("bar-conf").style.width = d.conf + "%";
+            }, 100);
+        } catch (e) {
+            display.innerHTML = "<div class='msg' style='color:red;'>NEURAL LINK FAILED. TRY AGAIN.</div>";
+        }
     }
 </script>
+
 </body>
 </html>
