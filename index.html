@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PRIME90.PRO - NEURAL UNIFIED</title>
+    <title>PRIME90.PRO - STABLE LINK</title>
     <style>
-        :root { --blue: #00f2ff; --gold: #ffcc00; --dark: #080808; }
+        :root { --cyan: #00f2ff; --gold: #ffcc00; --carbon: #080808; }
         body { background: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 10px; }
         .tesla-app { max-width: 450px; margin: auto; background: #0a0a0a; border-radius: 40px; border: 1px solid #1a1a1a; overflow: hidden; box-shadow: 0 0 60px #000; }
         .header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #111; }
         .logo { font-size: 30px; font-weight: 900; letter-spacing: -2px; }
-        .logo span { color: var(--blue); text-shadow: 0 0 15px var(--blue); }
+        .logo span { color: var(--cyan); text-shadow: 0 0 15px var(--cyan); }
         
         /* Stealth Key Config */
         .config { padding: 15px; background: #111; border-bottom: 1px solid #222; display: flex; gap: 8px; flex-wrap: wrap; }
-        .k-input { flex: 1; background: #000; border: 1px solid #333; border-radius: 12px; color: var(--blue); padding: 12px; font-size: 10px; }
-        .btn { background: var(--blue); color: #000; border: none; border-radius: 12px; padding: 10px 15px; font-weight: bold; cursor: pointer; font-size: 10px; }
+        .k-input { flex: 1; background: #000; border: 1px solid #333; border-radius: 12px; color: var(--cyan); padding: 12px; font-size: 10px; }
+        .btn { background: var(--cyan); color: #000; border: none; border-radius: 12px; padding: 10px 15px; font-weight: bold; cursor: pointer; font-size: 10px; }
 
         .m-list { padding: 20px; background: #080808; display: grid; gap: 8px; max-height: 220px; overflow-y: auto; border-bottom: 1px solid #111; }
         .m-btn { padding: 16px; background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 15px; color: #888; font-size: 12px; font-weight: bold; text-align: left; }
@@ -33,24 +33,25 @@
 <div class="tesla-app">
     <div class="header">
         <div class="logo">PRIME90<span>.PRO</span></div>
-        <div style="font-size:8px; color:#444; margin-top:8px; letter-spacing:3px;">FEB 20, 2026 | UNIFIED V30.0</div>
+        <div style="font-size:8px; color:#444; margin-top:8px; letter-spacing:3px;">FEB 20, 2026 | STABLE V31.0</div>
     </div>
 
     <div class="config">
-        <input type="password" id="sys_key" class="k-input" placeholder="PASTE NEURAL KEY (AIza...)">
+        <input type="password" id="sys_key" class="k-input" placeholder="PASTE KEY HERE (AIza...)">
         <button class="btn" onclick="saveKey()">CONNECT</button>
         <button class="btn" style="background:#333; color:#fff;" onclick="reset()">RESET</button>
     </div>
 
-    <div id="matches" class="m-list"><div class="msg">AWAITING SYSTEM CONNECTION...</div></div>
-    <div id="panel"><div class="msg">READY FOR TARGET SCAN</div></div>
+    <div id="matches" class="m-list"><div class="msg">AWAITING NEURAL CONNECTION...</div></div>
+    <div id="panel"><div class="msg">READY FOR TARGET ACQUISITION</div></div>
 </div>
 
 <script>
-    // ดึงค่า Key จากความจำ iPad
-    let currentKey = localStorage.getItem('p90_unified_key') || "";
-    // ปรับชื่อรุ่นเป็น 'latest' เพื่อความเสถียรสูงสุด
-    const MODEL_ID = "gemini-1.5-flash-latest"; 
+    // ดึงค่ารหัสจากความจำเครื่อง
+    let currentKey = localStorage.getItem('p90_stable_key') || "";
+    
+    // เปลี่ยนชื่อโมเดลเป็นตัวมาตรฐานที่สุด เพื่อแก้ปัญหา "Model not found"
+    const MODEL_ID = "gemini-1.5-flash"; 
     
     if(currentKey) {
         document.getElementById('sys_key').value = "********";
@@ -60,19 +61,19 @@
     function saveKey() {
         const k = document.getElementById('sys_key').value;
         if(k && k !== "********") {
-            localStorage.setItem('p90_unified_key', k);
+            localStorage.setItem('p90_stable_key', k);
             location.reload();
         }
     }
 
     function reset() {
-        localStorage.removeItem('p90_unified_key');
+        localStorage.removeItem('p90_stable_key');
         location.reload();
     }
 
     async function loadLiveFeed() {
         const list = document.getElementById("matches");
-        // เปลี่ยนมาใช้ v1 ถ้า v1beta มีปัญหา
+        // เรียกผ่าน v1beta เพื่อใช้ Google Search
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent?key=${currentKey}`;
         
         try {
@@ -85,7 +86,10 @@
                 })
             });
             const data = await res.json();
-            if(data.error) throw new Error(data.error.message);
+            
+            if(data.error) {
+                throw new Error(data.error.message);
+            }
             
             const matchData = JSON.parse(data.candidates[0].content.parts[0].text.match(/\[[\s\S]*\]/)[0]);
             list.innerHTML = "";
@@ -96,13 +100,13 @@
                 list.appendChild(b);
             });
         } catch (e) { 
-            list.innerHTML = `<div class='msg' style='color:#ff3e3e'>SYSTEM ERROR: ${e.message}</div>`; 
+            list.innerHTML = `<div class='msg' style='color:#ff3e3e'>SYNC ERROR: ${e.message}</div>`; 
         }
     }
 
     async function runScan(match) {
         const p = document.getElementById("panel");
-        p.innerHTML = "<div class='msg' style='color:var(--blue)'>PROCESSING NEURAL DATA...</div>";
+        p.innerHTML = "<div class='msg' style='color:var(--blue)'>SCANNING NEURAL STREAM...</div>";
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent?key=${currentKey}`;
         
         try {
@@ -110,7 +114,7 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: `วิเคราะห์ฟุตบอลคู่ ${match} วันนี้ 20 ก.พ. 2026 เน้นสูงแรกและสูงเต็มเวลา ตอบเป็น JSON: {'ht':85,'ft':75,'conf':90,'pick':'..'}` }] }]
+                    contents: [{ parts: [{ text: `วิเคราะห์ฟุตบอลคู่ ${match} วันนี้ 20 ก.พ. 2026 เน้นโอกาสสกอร์สูงแรก 0.5 และสูงเต็มเวลา 2.5 ตอบเป็น JSON: {'ht':85,'ft':75,'conf':90,'pick':'..'}` }] }]
                 })
             });
             const data = await res.json();
@@ -126,7 +130,7 @@
                 document.getElementById("b1").style.width = json.ht+"%"; 
                 document.getElementById("b2").style.width = json.ft+"%"; 
             }, 50);
-        } catch (e) { p.innerHTML = "<div class='msg' style='color:red'>SCAN FAILED.</div>"; }
+        } catch (e) { p.innerHTML = "<div class='msg' style='color:red'>ANALYSIS FAILED.</div>"; }
     }
 </script>
 </body>
