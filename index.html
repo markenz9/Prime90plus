@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PRIME90.CO - PROFESSIONAL AI</title>
+    <title>PRIME90.CO - REAL ANALYSIS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Kanit', sans-serif; background-color: #020617; color: white; }
         .card-pro { background: linear-gradient(145deg, #0f172a, #1e293b); border: 1px solid #334155; }
-        .bg-favorite { background-color: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
-        .bg-underdog { background-color: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; color: #93c5fd; }
-        .bg-neutral { background-color: rgba(234, 179, 8, 0.2); border: 1px solid #eab308; color: #fde047; }
+        .tag-fav { background-color: #ef4444; color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
+        .tag-under { background-color: #3b82f6; color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
+        .bg-pick-fav { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; }
+        .bg-pick-under { background: rgba(59, 130, 246, 0.2); border: 1px solid #3b82f6; }
         .hidden { display: none; }
     </style>
 </head>
@@ -19,12 +20,12 @@
 
     <div class="max-w-2xl mx-auto">
         <header class="text-center mb-10">
-            <h1 class="text-6xl font-black text-yellow-400 italic tracking-tighter drop-shadow-lg">PRIME90.CO</h1>
-            <div class="inline-block bg-yellow-500 text-black px-3 py-0.5 rounded-full text-[10px] font-bold mt-2 uppercase">Official AI Analysis</div>
+            <h1 class="text-6xl font-black text-yellow-400 italic tracking-tighter uppercase">PRIME90.CO</h1>
+            <p class="text-gray-500 text-[10px] font-bold tracking-[0.3em] mt-1">THE REAL FOOTBALL ANALYSIS</p>
         </header>
         
         <div id="match-container" class="space-y-6">
-            <div class="text-center py-20 text-yellow-500 animate-pulse font-bold italic">🤖 AI กำลังคำนวณราคาบอลวันนี้...</div>
+            <div class="text-center py-20 text-yellow-500 animate-pulse font-bold italic">🤖 กำลังดึงราคาบอลของแทร่...</div>
         </div>
     </div>
 
@@ -32,8 +33,7 @@
         const API_URL = "https://prime90api.arnupapsawad-mark2546.workers.dev";
 
         function toggleStep() {
-            const content = document.getElementById('step-content');
-            content.classList.toggle('hidden');
+            document.getElementById('step-content').classList.toggle('hidden');
         }
 
         async function fetchMatches() {
@@ -46,72 +46,73 @@
                 if(data.step) {
                     container.innerHTML = `
                         <div class="mb-10">
-                            <button onclick="toggleStep()" class="bg-gradient-to-r from-yellow-600 to-yellow-400 text-black font-black py-4 rounded-3xl w-full text-xl shadow-[0_10px_30px_rgba(234,179,8,0.3)] hover:scale-[1.02] transition-all">
-                                🔥 เปิดสเต็ป 3 ตัวตรงวันนี้ 🔥
-                            </button>
-                            <div id="step-content" class="hidden mt-4 bg-slate-900 border-2 border-yellow-500 rounded-3xl p-6 shadow-2xl">
-                                <div class="space-y-3">
-                                    ${data.step.map(item => `<div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 text-white font-black flex items-center gap-3"><span class="text-yellow-500">🎯</span> ${item}</div>`).join('')}
-                                </div>
+                            <button onclick="toggleStep()" class="bg-yellow-500 text-black font-black py-4 rounded-2xl w-full text-xl shadow-lg">🔥 ดูสเต็ป 3 ตัวจริงวันนี้ 🔥</button>
+                            <div id="step-content" class="hidden mt-4 bg-slate-900 border-2 border-yellow-500 rounded-2xl p-6">
+                                ${data.step.map(item => `<div class="p-3 border-b border-slate-800 font-bold">🎯 ${item}</div>`).join('')}
                             </div>
                         </div>`;
                 }
 
                 data.matches.forEach(match => {
-                    // กำหนดสีตามประเภทที่ AI เลือก
-                    let colorClass = "bg-neutral";
-                    if(match.pick_type === "favorite") colorClass = "bg-favorite";
-                    if(match.pick_type === "underdog") colorClass = "bg-underdog";
+                    // เช็คว่าใครเป็นต่อเพื่อใส่ลูกบอล
+                    const isHomeFav = match.fav_team === match.team_home;
+                    const isAwayFav = match.fav_team === match.team_away;
+                    
+                    const pickClass = match.pick_type === "favorite" ? "bg-pick-fav text-red-400" : "bg-pick-under text-blue-400";
 
                     container.innerHTML += `
-                        <div class="card-pro rounded-[40px] overflow-hidden mb-8 shadow-2xl border-b-4 border-slate-800">
-                            <div class="bg-slate-950/80 px-8 py-3 flex justify-between items-center border-b border-slate-800/50">
-                                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">${match.league}</span>
-                                <span class="text-gray-400 font-bold text-[11px]">${match.date_full}</span>
+                        <div class="card-pro rounded-[35px] overflow-hidden mb-8 border-b-4 border-black/50">
+                            <div class="bg-slate-950/50 px-6 py-2 flex justify-between items-center text-[10px] font-bold">
+                                <span class="text-gray-500 uppercase">${match.league}</span>
+                                <span class="text-yellow-500">${match.date_full}</span>
                             </div>
 
-                            <div class="p-8">
-                                <div class="flex justify-between items-center mb-8">
-                                    <div class="w-1/3 text-center">
-                                        <img src="${match.logo_home}" class="w-16 h-16 mx-auto mb-2 drop-shadow-xl">
-                                        <p class="font-bold text-xs">${match.team_home}</p>
+                            <div class="p-6">
+                                <div class="flex justify-between items-center mb-8 text-center">
+                                    <div class="w-2/5">
+                                        <img src="${match.logo_home}" class="w-14 h-14 mx-auto mb-2">
+                                        <p class="font-bold text-xs">
+                                            ${isHomeFav ? '⚽ ' : ''}${match.team_home}
+                                        </p>
+                                        <span class="${isHomeFav ? 'tag-fav' : 'tag-under'}">${isHomeFav ? 'ทีมต่อ' : 'ทีมรอง'}</span>
                                     </div>
-                                    <div class="text-2xl font-black text-slate-700 italic">VS</div>
-                                    <div class="w-1/3 text-center">
-                                        <img src="${match.logo_away}" class="w-16 h-16 mx-auto mb-2 drop-shadow-xl">
-                                        <p class="font-bold text-xs">${match.team_away}</p>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-3 gap-3 mb-6">
-                                    <div class="bg-black/30 p-3 rounded-2xl border border-white/5 text-center">
-                                        <p class="text-[8px] text-gray-500 uppercase font-black">HDP</p>
-                                        <p class="text-sm font-black text-white">${match.hdp_p}</p>
-                                    </div>
-                                    <div class="bg-black/30 p-3 rounded-2xl border border-white/5 text-center">
-                                        <p class="text-[8px] text-gray-500 uppercase font-black">สูงแรก</p>
-                                        <p class="text-sm font-black text-white">${match.ou_ht}</p>
-                                    </div>
-                                    <div class="bg-black/30 p-3 rounded-2xl border border-white/5 text-center">
-                                        <p class="text-[8px] text-gray-500 uppercase font-black">สูงเต็ม</p>
-                                        <p class="text-sm font-black text-white">${match.ou_ft}</p>
+                                    <div class="text-xl font-black text-slate-800 italic">VS</div>
+                                    <div class="w-2/5">
+                                        <img src="${match.logo_away}" class="w-14 h-14 mx-auto mb-2">
+                                        <p class="font-bold text-xs">
+                                            ${isAwayFav ? '⚽ ' : ''}${match.team_away}
+                                        </p>
+                                        <span class="${isAwayFav ? 'tag-fav' : 'tag-under'}">${isAwayFav ? 'ทีมต่อ' : 'ทีมรอง'}</span>
                                     </div>
                                 </div>
 
-                                <div class="${colorClass} p-5 rounded-3xl text-center shadow-inner">
-                                    <p class="text-[10px] uppercase font-black mb-1 opacity-60 tracking-widest">👑 AI Best Decision 👑</p>
-                                    <p class="text-2xl font-black italic tracking-tight">${match.best_pick}</p>
+                                <div class="grid grid-cols-3 gap-2 mb-6">
+                                    <div class="bg-black/20 p-2 rounded-xl text-center border border-white/5">
+                                        <p class="text-[8px] text-gray-500 font-bold">HDP</p>
+                                        <p class="text-xs font-black">${match.hdp_p}</p>
+                                    </div>
+                                    <div class="bg-black/20 p-2 rounded-xl text-center border border-white/5">
+                                        <p class="text-[8px] text-gray-500 font-bold">สูงแรก</p>
+                                        <p class="text-xs font-black">${match.ou_ht}</p>
+                                    </div>
+                                    <div class="bg-black/20 p-2 rounded-xl text-center border border-white/5">
+                                        <p class="text-[8px] text-gray-500 font-bold">สูงเต็ม</p>
+                                        <p class="text-xs font-black">${match.ou_ft}</p>
+                                    </div>
                                 </div>
 
-                                <div class="mt-4 bg-white/5 p-4 rounded-2xl border-l-4 border-yellow-500">
-                                    <p class="text-[11px] text-gray-400 leading-relaxed italic">
-                                        <span class="text-yellow-500 font-bold not-italic">AI Insight:</span> ${match.reason}
-                                    </p>
+                                <div class="${pickClass} p-4 rounded-2xl text-center mb-4">
+                                    <p class="text-[10px] font-black uppercase mb-1 opacity-70">AI BEST PICK</p>
+                                    <p class="text-xl font-black italic tracking-tight">${match.best_pick}</p>
+                                </div>
+
+                                <div class="bg-white/5 p-3 rounded-xl border-l-2 border-yellow-500">
+                                    <p class="text-[10px] text-gray-400 italic">" ${match.reason} "</p>
                                 </div>
                             </div>
                         </div>`;
                 });
-            } catch (e) { container.innerHTML = '<p class="text-center">Error Loading</p>'; }
+            } catch (e) { container.innerHTML = '<p class="text-center">Error</p>'; }
         }
         fetchMatches();
     </script>
