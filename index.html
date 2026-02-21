@@ -20,6 +20,12 @@
         .f-W { background-color: #22c55e; } 
         .f-D { background-color: #94a3b8; } 
         .f-L { background-color: #ef4444; } 
+        .tab-btn { flex: 1; padding: 12px; text-align: center; font-weight: 900; border-radius: 20px; transition: all 0.3s; cursor: pointer; }
+        .tab-active { background-color: #eab308; color: black; }
+        .tab-inactive { background-color: #1e293b; color: #94a3b8; }
+        /* สไตล์สำหรับแถบกรองลีก */
+        .filter-btn { padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; white-space: nowrap; cursor: pointer; border: 1px solid #334155; color: #94a3b8; background: #0f172a; transition: 0.3s; }
+        .filter-active { border-color: #eab308; color: #eab308; background: rgba(234, 179, 8, 0.1); }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -30,16 +36,41 @@
             <p class="text-gray-500 text-[10px] font-bold tracking-[0.3em] mt-1 uppercase">Official AI Analysis 2026</p>
         </header>
 
-        <div id="loader" class="text-center py-20 text-yellow-500 animate-pulse font-bold text-xl italic">🤖 กำลังดึงข้อมูลสปอร์ตบุ๊คและราคาจริง...</div>
+        <div class="flex gap-2 mb-4 bg-slate-900 p-2 rounded-[25px] border border-slate-800 shadow-lg">
+            <div id="tab-upcoming" onclick="switchTab('upcoming')" class="tab-btn tab-active text-sm uppercase">⚽ โปรแกรมวันนี้</div>
+            <div id="tab-finished" onclick="switchTab('finished')" class="tab-btn tab-inactive text-sm uppercase">📊 สถิติผลบอล</div>
+        </div>
+        
+        <div id="loader" class="text-center py-20 text-yellow-500 animate-pulse font-bold text-xl italic">🤖 กำลังดึงข้อมูลราคาและวิเคราะห์สถิติ...</div>
 
         <div id="upcoming-zone" class="hidden">
+            <div id="league-filters" class="flex overflow-x-auto gap-2 mb-6 pb-2 scrollbar-hide hidden">
+                <button onclick="filterLeague('All')" id="btn-filter-All" class="filter-btn filter-active">ALL LEAGUES</button>
+            </div>
+
             <div id="step-container"></div>
             <div id="match-container" class="space-y-6"></div>
+            
+            <div id="vip-zone" class="mt-10 relative hidden">
+                <div class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 rounded-[40px] border-2 border-yellow-500/50">
+                    <span class="text-5xl mb-2">👑</span>
+                    <h3 class="text-yellow-400 font-black text-2xl italic">SUPER VIP PICK</h3>
+                    <p class="text-xs text-gray-300 mt-2 font-bold bg-black/50 px-4 py-2 rounded-full">ปลดล็อคทีเด็ด 5 ดาวในกลุ่มเท่านั้น</p>
+                </div>
+                <div class="card-pro rounded-[40px] overflow-hidden vip-blur opacity-50 p-8 text-center h-[200px]">
+                    <h2 class="text-2xl font-black mt-4">TEAM A vs TEAM B</h2>
+                </div>
+            </div>
+        </div>
+
+        <div id="finished-zone" class="space-y-6 hidden">
+            <div class="text-center mb-6"><h2 class="text-2xl font-black text-white italic">สรุปผลการแข่งขันล่าสุด</h2></div>
+            <div id="finished-container" class="space-y-4"></div>
         </div>
     </div>
 
     <script>
-        // ใส่เวลาต่อท้ายให้มันไม่จำหน้าเว็บเดิม
+        // ใช้ ?t= เพื่อป้องกัน Browser จำหน้าเว็บเก่าเวลาเทส
         const API_URL = "https://prime90api.arnupapsawad-mark2546.workers.dev?t=" + new Date().getTime();
         const fallbackLogo = "https://cdn-icons-png.flaticon.com/512/1165/1165183.png"; 
 
@@ -52,9 +83,38 @@
             }).join('');
         }
 
+        function switchTab(tab) {
+            if(tab === 'upcoming') {
+                document.getElementById('tab-upcoming').className = 'tab-btn tab-active text-sm uppercase';
+                document.getElementById('tab-finished').className = 'tab-btn tab-inactive text-sm uppercase';
+                document.getElementById('upcoming-zone').classList.remove('hidden');
+                document.getElementById('finished-zone').classList.add('hidden');
+            } else {
+                document.getElementById('tab-upcoming').className = 'tab-btn tab-inactive text-sm uppercase';
+                document.getElementById('tab-finished').className = 'tab-btn tab-active text-sm uppercase';
+                document.getElementById('upcoming-zone').classList.add('hidden');
+                document.getElementById('finished-zone').classList.remove('hidden');
+            }
+        }
+
+        function filterLeague(leagueName) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('filter-active'));
+            document.getElementById('btn-filter-' + leagueName.replace(/\s+/g, '-')).classList.add('filter-active');
+            
+            document.querySelectorAll('.match-card').forEach(card => {
+                if(leagueName === 'All' || card.getAttribute('data-league') === leagueName) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
         async function fetchMatches() {
             const container = document.getElementById('match-container');
             const stepContainer = document.getElementById('step-container');
+            const finishedContainer = document.getElementById('finished-container');
+            const filterContainer = document.getElementById('league-filters');
             const loader = document.getElementById('loader');
 
             try {
@@ -73,19 +133,33 @@
                     </div>`;
                 }
 
+                // ดึงชื่อลีกมาทำปุ่มกรอง
+                let uniqueLeagues = [...new Set(data.matches.map(m => m.league))];
+                if(uniqueLeagues.length > 0) {
+                    filterContainer.classList.remove('hidden');
+                    uniqueLeagues.forEach(league => {
+                        const safeId = league.replace(/\s+/g, '-');
+                        filterContainer.innerHTML += `<button onclick="filterLeague('${league}')" id="btn-filter-${safeId}" class="filter-btn">${league}</button>`;
+                    });
+                }
+
                 data.matches.forEach(m => {
-                    // 🔴 ลอจิกทีมต่อ/ทีมรอง คมๆ ไม่มีพลาด
+                    // ลอจิกทีมต่อทีมรอง อิงจากหลังบ้านเป๊ะๆ
                     const isDraw = m.isDraw;
                     const isHomeFav = !isDraw && m.isHomeFav;
                     const isAwayFav = !isDraw && !m.isHomeFav;
 
                     let pickClass = m.type === "fav" ? "pick-fav" : (m.type === "under" ? "pick-under" : (m.type.includes("under_") ? "pick-under-score" : "pick-over")); 
 
+                    // ลูกศรราคาไหล (กิมมิคเว็บพนัน)
+                    const arrowOdds = (Math.random() > 0.5) ? '<span class="text-green-500 text-[10px] ml-1">▲</span>' : '<span class="text-red-500 text-[10px] ml-1">▼</span>';
+
+                    // สกอร์สด (โชว์เมื่อกำลังเตะ)
                     const scoreDisplayH = m.score_h !== null ? `<span class="text-xl text-yellow-400 font-black ml-2">${m.score_h}</span>` : '';
                     const scoreDisplayA = m.score_a !== null ? `<span class="text-xl text-yellow-400 font-black ml-2">${m.score_a}</span>` : '';
 
                     container.innerHTML += `
-                        <div class="card-pro rounded-[40px] overflow-hidden mb-8 shadow-2xl">
+                        <div class="card-pro rounded-[40px] overflow-hidden mb-8 shadow-2xl match-card" data-league="${m.league}">
                             <div class="bg-slate-950/50 px-6 py-3 flex justify-between items-center text-[10px] font-bold">
                                 <div class="flex items-center gap-2"><img src="${m.flag}" class="w-4 h-3 rounded-sm object-cover" onerror="this.style.display='none'"><span class="text-gray-400 uppercase tracking-wider">${m.league}</span></div>
                                 <div>${m.timeDisplay}</div>
@@ -107,9 +181,9 @@
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-3 gap-2 mb-6 text-center">
-                                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">ราคาต่อ</p><p class="text-sm font-black text-white">${m.hdp}</p></div>
+                                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">ราคาต่อ</p><p class="text-sm font-black text-white">${m.hdp} ${arrowOdds}</p></div>
                                     <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงแรก</p><p class="text-sm font-black text-white">${m.ht}</p></div>
-                                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงเต็ม</p><p class="text-sm font-black text-white">${m.ft}</p></div>
+                                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงเต็ม</p><p class="text-sm font-black text-white">${m.ft} ${arrowOdds}</p></div>
                                 </div>
                                 <div class="${pickClass} p-6 rounded-[35px] text-center mb-4 shadow-inner">
                                     <p class="text-[10px] font-black uppercase mb-1 opacity-70 tracking-widest">👑 AI Best Pick 👑</p>
@@ -119,6 +193,33 @@
                             </div>
                         </div>`;
                 });
+
+                document.getElementById('vip-zone').classList.remove('hidden');
+
+                if(data.finished && data.finished.length > 0) {
+                    data.finished.forEach(m => {
+                        finishedContainer.innerHTML += `
+                        <div class="card-pro rounded-3xl p-5 mb-4 shadow-lg flex items-center justify-between">
+                            <div class="w-1/3 text-center">
+                                <img src="${m.logo_h}" onerror="this.src='${fallbackLogo}'" class="w-10 h-10 mx-auto mb-2 opacity-80">
+                                <p class="text-[11px] font-bold text-gray-300 leading-tight">${m.home}</p>
+                            </div>
+                            <div class="w-1/3 text-center">
+                                <div class="bg-slate-900 border border-slate-700 rounded-xl py-2 px-4 inline-block">
+                                    <p class="text-2xl font-black text-white">${m.score_h} - ${m.score_a}</p>
+                                </div>
+                                <p class="text-[9px] text-gray-500 mt-2 uppercase">FT | ${m.date}</p>
+                            </div>
+                            <div class="w-1/3 text-center">
+                                <img src="${m.logo_a}" onerror="this.src='${fallbackLogo}'" class="w-10 h-10 mx-auto mb-2 opacity-80">
+                                <p class="text-[11px] font-bold text-gray-300 leading-tight">${m.away}</p>
+                            </div>
+                        </div>`;
+                    });
+                } else {
+                    finishedContainer.innerHTML = '<p class="text-center text-gray-500 py-10">ยังไม่มีสถิติผลบอลในขณะนี้</p>';
+                }
+
             } catch (e) {
                 loader.innerHTML = `<div class="text-red-500 font-bold py-10"><span class="text-4xl mb-4 block">⚠️</span>❌ เกิดข้อผิดพลาด:<br> <span class="text-sm font-normal text-gray-300">${e.message}</span><br><br><button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-2xl mt-4 active:scale-95 transition-all font-black shadow-lg">กดลองใหม่อีกครั้ง</button></div>`;
             }
