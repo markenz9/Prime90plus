@@ -38,7 +38,7 @@
             <div id="tab-finished" onclick="switchTab('finished')" class="tab-btn tab-inactive text-sm uppercase">📊 สถิติผลบอล</div>
         </div>
         
-        <div id="loader" class="text-center py-20 text-yellow-500 animate-pulse font-bold text-xl italic">🤖 กำลังโหลดข้อมูล... (ครั้งแรกอาจใช้เวลาสักครู่)</div>
+        <div id="loader" class="text-center py-20 text-yellow-500 animate-pulse font-bold text-xl italic">🤖 กำลังดึงข้อมูล... (อาจใช้เวลาโหลดครั้งแรก)</div>
 
         <div id="upcoming-zone" class="space-y-6 hidden">
             <div id="step-container"></div>
@@ -96,7 +96,8 @@
             const loader = document.getElementById('loader');
 
             try {
-                const response = await fetch(API_URL);
+                // เพิ่ม cache buster เพื่อไม่ให้หน้าเว็บติดแคช Browser ตัวเอง
+                const response = await fetch(API_URL + "?t=" + new Date().getTime());
                 const data = await response.json();
                 
                 if (data.error) throw new Error(data.error);
@@ -113,11 +114,15 @@
                 }
 
                 data.matches.forEach(m => {
-                    // 🔴 แก้ปัญหาทีมรอง 100% 🔴
-                    const isHomeFav = m.fav === "1";
-                    const isAwayFav = m.fav === "2";
-                    const isDraw = m.fav === "0" || m.hdp === "0" || m.hdp === "เสมอ";
+                    // 🔴 ลอจิกเช็คทีมต่อ/ทีมรอง แบบตัดคำ (แก้บั๊ก [ทีมรอง] ทั้ง 2 ฝั่ง)
+                    const favTeam = String(m.fav).toLowerCase();
+                    const homeTeam = m.home.toLowerCase();
+                    const awayTeam = m.away.toLowerCase();
                     
+                    const isDraw = favTeam === "เสมอ" || m.hdp === "0" || m.hdp === "เสมอ" || m.hdp.includes("+");
+                    const isHomeFav = !isDraw && (favTeam.includes(homeTeam.split(' ')[0]) || homeTeam.includes(favTeam.split(' ')[0]));
+                    const isAwayFav = !isDraw && !isHomeFav && (favTeam.includes(awayTeam.split(' ')[0]) || awayTeam.includes(favTeam.split(' ')[0]));
+
                     let pickClass = m.type === "fav" ? "pick-fav" : (m.type === "under" ? "pick-under" : (m.type.includes("under_") ? "pick-under-score" : "pick-over")); 
 
                     container.innerHTML += `
@@ -143,7 +148,7 @@
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-3 gap-2 mb-6 text-center">
-                                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">ราคาต่อ</p><p class="text-sm font-black text-white">${isDraw ? '0' : m.hdp}</p></div>
+                                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">ราคาต่อ</p><p class="text-sm font-black text-white">${m.hdp}</p></div>
                                     <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงแรก</p><p class="text-sm font-black text-white">${m.ht}</p></div>
                                     <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงเต็ม</p><p class="text-sm font-black text-white">${m.ft}</p></div>
                                 </div>
@@ -151,7 +156,7 @@
                                     <p class="text-[10px] font-black uppercase mb-1 opacity-70 tracking-widest">👑 AI Best Pick 👑</p>
                                     <p class="text-2xl font-black italic uppercase leading-tight">${m.best}</p>
                                 </div>
-                                <div class="bg-white/5 p-4 rounded-2xl border-l-4 border-yellow-500 text-[11px] text-gray-400 italic">" ${m.reason} "</div>
+                                <div class="bg-white/5 p-4 rounded-2xl border-l-4 border-yellow-500 text-[11px] text-gray-400 italic leading-relaxed">" ${m.reason} "</div>
                             </div>
                         </div>`;
                 });
