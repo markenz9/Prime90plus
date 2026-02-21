@@ -15,12 +15,11 @@
         .pick-under-score { border: 2px solid #a855f7; background: rgba(168, 85, 247, 0.15); color: #d8b4fe; }
         .hidden { display: none; }
         img { object-fit: contain; }
-        /* สไตล์สำหรับเบลอโซน VIP */
         .vip-blur { filter: blur(5px); pointer-events: none; user-select: none; }
         .form-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin: 0 1px; }
-        .f-W { background-color: #22c55e; } /* ชนะ สีเขียว */
-        .f-D { background-color: #94a3b8; } /* เสมอ สีเทา */
-        .f-L { background-color: #ef4444; } /* แพ้ สีแดง */
+        .f-W { background-color: #22c55e; } 
+        .f-D { background-color: #94a3b8; } 
+        .f-L { background-color: #ef4444; } 
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -41,7 +40,7 @@
         </div>
         
         <div id="match-container" class="space-y-6">
-            <div id="loader" class="text-center py-20 text-yellow-500 animate-pulse font-bold text-xl italic">🤖 กำลังดึง 10 คู่เด็ดและคัดสเต็ป...</div>
+            <div id="loader" class="text-center py-20 text-yellow-500 animate-pulse font-bold text-xl italic">🤖 กำลังดึง 8 คู่เด็ดและคัดสเต็ป...</div>
         </div>
 
         <div id="vip-zone" class="hidden mt-10 relative">
@@ -70,9 +69,14 @@
         const API_URL = "https://prime90api.arnupapsawad-mark2546.workers.dev";
         const fallbackLogo = "https://cdn-icons-png.flaticon.com/512/1165/1165183.png"; 
 
-        // ฟังก์ชันแปลงตัวอักษร W,D,L เป็นจุดสี
+        // 🔴 ป้องกันบักการดึงตัวอักษรผิดพลาด 100%
         function renderForm(formString) {
-            return formString.split(' ').map(f => `<span class="form-dot f-${f}"></span>`).join('');
+            if (!formString || typeof formString !== 'string') return '<span class="form-dot f-D"></span>'.repeat(5);
+            return formString.split(' ').map(f => {
+                const char = f.trim().toUpperCase();
+                const validChar = ['W', 'D', 'L'].includes(char) ? char : 'D';
+                return `<span class="form-dot f-${validChar}"></span>`;
+            }).join('');
         }
 
         async function fetchMatches() {
@@ -107,7 +111,6 @@
                     if(m.type === "under") pickClass = "pick-under"; 
                     if(m.type.includes("under_")) pickClass = "pick-under-score"; 
 
-                    // 📈 3. เพิ่มฟอร์ม 5 นัดหลังสุดใต้ชื่อทีม
                     const formHomeHTML = renderForm(m.form_h);
                     const formAwayHTML = renderForm(m.form_a);
 
@@ -128,3 +131,39 @@
                                         <div class="mb-2">${formHomeHTML}</div>
                                         <span class="text-[10px] ${isDraw ? 'text-gray-500' : (isHomeFav ? 'text-red-500' : 'text-blue-500')} font-black">
                                             ${isDraw ? '[เสมอ]' : (isHomeFav ? '[ทีมต่อ]' : '[ทีมรอง]')}
+                                        </span>
+                                    </div>
+                                    <div class="text-3xl font-black text-slate-800 italic uppercase">VS</div>
+                                    <div class="w-2/5">
+                                        <img src="${m.logo_a}" onerror="this.src='${fallbackLogo}'" class="w-16 h-16 mx-auto mb-3 drop-shadow-xl">
+                                        <p class="font-bold text-[13px] leading-tight mb-1">${isAwayFav ? '⚽ ' : ''}${m.away}</p>
+                                        <div class="mb-2">${formAwayHTML}</div>
+                                        <span class="text-[10px] ${isDraw ? 'text-gray-500' : (isAwayFav ? 'text-red-500' : 'text-blue-500')} font-black">
+                                            ${isDraw ? '[เสมอ]' : (isAwayFav ? '[ทีมต่อ]' : '[ทีมรอง]')}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 mb-6 text-center">
+                                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">ราคาต่อ</p><p class="text-sm font-black text-white">${m.hdp}</p></div>
+                                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงแรก</p><p class="text-sm font-black text-white">${m.ht}</p></div>
+                                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงเต็ม</p><p class="text-sm font-black text-white">${m.ft}</p></div>
+                                </div>
+                                <div class="${pickClass} p-6 rounded-[35px] text-center mb-4 shadow-inner">
+                                    <p class="text-[10px] font-black uppercase mb-1 opacity-70 tracking-widest">👑 AI Best Pick 👑</p>
+                                    <p class="text-2xl font-black italic uppercase leading-tight">${m.best}</p>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-2xl border-l-4 border-yellow-500 text-[11px] text-gray-400 italic">" ${m.reason} "</div>
+                            </div>
+                        </div>`;
+                });
+
+                vipZone.classList.remove('hidden');
+
+            } catch (e) {
+                loader.innerHTML = `<div class="text-red-500 font-bold py-10"><span class="text-4xl mb-4 block">⚠️</span>❌ เกิดข้อผิดพลาด:<br> <span class="text-sm font-normal text-gray-300">${e.message}</span><br><br><button onclick="location.reload()" class="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-2xl mt-4 active:scale-95 transition-all font-black shadow-lg">กดลองใหม่อีกครั้ง</button></div>`;
+            }
+        }
+        fetchMatches();
+    </script>
+</body>
+</html>
