@@ -20,7 +20,6 @@
         .f-W { background-color: #22c55e; } 
         .f-D { background-color: #94a3b8; } 
         .f-L { background-color: #ef4444; } 
-        /* ปุ่ม Tab แบบเว็บโปร */
         .tab-btn { flex: 1; padding: 12px; text-align: center; font-weight: 900; border-radius: 20px; transition: all 0.3s; cursor: pointer; }
         .tab-active { background-color: #eab308; color: black; }
         .tab-inactive { background-color: #1e293b; color: #94a3b8; }
@@ -39,13 +38,13 @@
             <div id="tab-finished" onclick="switchTab('finished')" class="tab-btn tab-inactive text-sm uppercase">📊 สถิติผลบอล</div>
         </div>
         
-        <div id="loader" class="text-center py-20 text-yellow-500 animate-pulse font-bold text-xl italic">🤖 กำลังโหลดข้อมูล...</div>
+        <div id="loader" class="text-center py-20 text-yellow-500 animate-pulse font-bold text-xl italic">🤖 กำลังโหลดข้อมูล... (ครั้งแรกอาจใช้เวลาสักครู่)</div>
 
         <div id="upcoming-zone" class="space-y-6 hidden">
             <div id="step-container"></div>
             <div id="match-container" class="space-y-6"></div>
             
-            <div id="vip-zone" class="mt-10 relative">
+            <div id="vip-zone" class="mt-10 relative hidden">
                 <div class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 rounded-[40px] border-2 border-yellow-500/50">
                     <span class="text-5xl mb-2">👑</span>
                     <h3 class="text-yellow-400 font-black text-2xl italic">SUPER VIP PICK</h3>
@@ -76,7 +75,6 @@
             }).join('');
         }
 
-        // ฟังก์ชันสลับหน้าจอ
         function switchTab(tab) {
             if(tab === 'upcoming') {
                 document.getElementById('tab-upcoming').className = 'tab-btn tab-active text-sm uppercase';
@@ -104,9 +102,8 @@
                 if (data.error) throw new Error(data.error);
 
                 loader.classList.add('hidden');
-                document.getElementById('upcoming-zone').classList.remove('hidden'); // เปิดโชว์หน้าแรก
+                document.getElementById('upcoming-zone').classList.remove('hidden');
 
-                // 🔴 โหลดสเต็ป
                 if(data.step && data.step.length > 0) {
                     stepContainer.innerHTML = `
                     <button onclick="document.getElementById('step-box').classList.toggle('hidden')" class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-black py-4 rounded-3xl w-full text-xl mb-10 shadow-lg active:scale-95 transition-all">🔥 เปิดสเต็ป 3 ตัวตรงวันนี้</button>
@@ -115,10 +112,12 @@
                     </div>`;
                 }
 
-                // 🔴 โหลดคู่กำลังจะเตะ
                 data.matches.forEach(m => {
-                    const isHomeFav = m.fav === m.home;
-                    const isDraw = m.fav === "เสมอ" || m.fav === "ไม่มี" || m.hdp === "เสมอ" || m.hdp === "0";
+                    // 🔴 แก้ปัญหาทีมรอง 100% 🔴
+                    const isHomeFav = m.fav === "1";
+                    const isAwayFav = m.fav === "2";
+                    const isDraw = m.fav === "0" || m.hdp === "0" || m.hdp === "เสมอ";
+                    
                     let pickClass = m.type === "fav" ? "pick-fav" : (m.type === "under" ? "pick-under" : (m.type.includes("under_") ? "pick-under-score" : "pick-over")); 
 
                     container.innerHTML += `
@@ -138,13 +137,13 @@
                                     <div class="text-3xl font-black text-slate-800 italic uppercase">VS</div>
                                     <div class="w-2/5">
                                         <img src="${m.logo_a}" onerror="this.src='${fallbackLogo}'" class="w-16 h-16 mx-auto mb-3 drop-shadow-xl">
-                                        <p class="font-bold text-[13px] leading-tight mb-1">${m.fav === m.away ? '⚽ ' : ''}${m.away}</p>
+                                        <p class="font-bold text-[13px] leading-tight mb-1">${isAwayFav ? '⚽ ' : ''}${m.away}</p>
                                         <div class="mb-2">${renderForm(m.form_a)}</div>
-                                        <span class="text-[10px] ${isDraw ? 'text-gray-500' : (m.fav === m.away ? 'text-red-500' : 'text-blue-500')} font-black">${isDraw ? '[เสมอ]' : (m.fav === m.away ? '[ทีมต่อ]' : '[ทีมรอง]')}</span>
+                                        <span class="text-[10px] ${isDraw ? 'text-gray-500' : (isAwayFav ? 'text-red-500' : 'text-blue-500')} font-black">${isDraw ? '[เสมอ]' : (isAwayFav ? '[ทีมต่อ]' : '[ทีมรอง]')}</span>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-3 gap-2 mb-6 text-center">
-                                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">ราคาต่อ</p><p class="text-sm font-black text-white">${m.hdp}</p></div>
+                                    <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">ราคาต่อ</p><p class="text-sm font-black text-white">${isDraw ? '0' : m.hdp}</p></div>
                                     <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงแรก</p><p class="text-sm font-black text-white">${m.ht}</p></div>
                                     <div class="bg-black/40 p-3 rounded-2xl border border-white/5"><p class="text-[9px] text-gray-500 font-bold uppercase mb-1">สูงเต็ม</p><p class="text-sm font-black text-white">${m.ft}</p></div>
                                 </div>
@@ -157,7 +156,8 @@
                         </div>`;
                 });
 
-                // 🔴 โหลดคู่ที่เตะจบแล้ว (หน้าสถิติ)
+                document.getElementById('vip-zone').classList.remove('hidden');
+
                 if(data.finished && data.finished.length > 0) {
                     data.finished.forEach(m => {
                         finishedContainer.innerHTML += `
